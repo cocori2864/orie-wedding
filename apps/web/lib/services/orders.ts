@@ -16,8 +16,8 @@ export async function createOrder(orderData: {
     totalAmount: number;
     deliveryMethod: 'quick' | 'pickup';
     deliveryInfo: {
-        date: string;
-        time: string;
+        date?: string;
+        time?: string;
         address?: string;
         detailAddress?: string;
         note?: string;
