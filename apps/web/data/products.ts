@@ -1,8 +1,5 @@
 // 웨딩 부케 상품 데이터
 export const ALL_PRODUCTS = [
-    { id: "1", name: "클래식 로즈 부케", price: 180000, category: "클래식", image: "/images/bouquet_01.png", color: "White", style: "Round" },
-    { id: "2", name: "화이트 피오니 부케", price: 220000, category: "클래식", image: "/images/bouquet_02.png", color: "White", style: "Round" },
-    { id: "3", name: "와일드 플라워 부케", price: 150000, category: "내추럴", image: "/images/bouquet_03.png", color: "Green", style: "Natural" },
     { id: "4", name: "피치 튤립 로맨스 부케", price: 190000, category: "로맨틱", image: "/images/bouquet_04.png", color: "Pink", style: "Round" },
     { id: "5", name: "모던 카라 릴리 부케", price: 210000, category: "클래식", image: "/images/bouquet_05.png", color: "White", style: "Drop" },
     { id: "6", name: "빈티지 수국 부케", price: 170000, category: "로맨틱", image: "/images/bouquet_06.png", color: "Purple", style: "Round" },
@@ -27,39 +24,7 @@ export const PRODUCT_DETAILS: Record<string, {
     color: string;
     style: string;
 }> = {
-    "1": {
-        id: "1",
-        name: "클래식 로즈 부케",
-        price: 180000,
-        category: "클래식",
-        description: "순백의 장미와 그린 잎사귀가 조화롭게 어우러진 클래식한 웨딩 부케입니다. 영원한 사랑을 상징하는 장미로 특별한 날을 더욱 빛나게 해드립니다.",
-        image: "/images/bouquet_01.png",
-        flowers: "화이트 로즈 | 유칼립투스 | 피버퓨",
-        color: "White",
-        style: "Round",
-    },
-    "2": {
-        id: "2",
-        name: "화이트 피오니 부케",
-        price: 220000,
-        category: "클래식",
-        description: "풍성하고 우아한 피오니로 구성된 프리미엄 부케입니다. 부드러운 꽃잎이 신부님의 아름다움을 한층 돋보이게 합니다.",
-        image: "/images/bouquet_02.png",
-        flowers: "화이트 피오니 | 라넌큘러스 | 더스티 밀러",
-        color: "White",
-        style: "Round",
-    },
-    "3": {
-        id: "3",
-        name: "와일드 플라워 부케",
-        price: 150000,
-        category: "내추럴",
-        description: "자연스러운 들꽃의 매력을 담은 내추럴 스타일 부케입니다. 가든 웨딩이나 야외 결혼식에 완벽하게 어울립니다.",
-        image: "/images/bouquet_03.png",
-        flowers: "카모마일 | 레이스플라워 | 그린벨",
-        color: "Green",
-        style: "Natural",
-    },
+
     "4": {
         id: "4",
         name: "피치 튤립 로맨스 부케",
