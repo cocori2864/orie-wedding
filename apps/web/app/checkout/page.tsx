@@ -83,11 +83,10 @@ export default function CheckoutPage() {
                 const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
                 const tossPayments = await loadTossPayments(clientKey);
 
-                await tossPayments.requestPayment({
-                    method: "CARD",
+                await tossPayments.requestPayment("카드", {
                     amount: subtotal,
                     orderId: result.orderId || "",
-                    orderName: items.length > 1 ? `${items[0].name} 외 ${items.length - 1}건` : items[0].name,
+                    orderName: items && items.length > 1 ? `${items[0]?.name || '상품'} 외 ${items.length - 1}건` : items[0]?.name || '상품',
                     successUrl: `${window.location.origin}/payment/success`,
                     failUrl: `${window.location.origin}/payment/fail`,
                     customerEmail: email || user?.email || "",
