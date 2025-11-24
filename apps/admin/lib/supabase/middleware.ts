@@ -40,11 +40,29 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
-    // Redirect if already logged in
-    if (user && request.nextUrl.pathname.startsWith('/login')) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/'
-        return NextResponse.redirect(url)
+    // Check admin role
+    if (user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role !== 'admin' && !request.nextUrl.pathname.startsWith('/login')) {
+            // If user is logged in but not admin, sign them out or redirect to error
+            // For now, redirect to login with error
+            const url = request.nextUrl.clone()
+            url.pathname = '/login'
+            url.searchParams.set('error', 'Unauthorized access')
+            return NextResponse.redirect(url)
+        }
+
+        // Redirect if already logged in as admin
+        if (request.nextUrl.pathname.startsWith('/login')) {
+            const url = request.nextUrl.clone()
+            url.pathname = '/'
+            return NextResponse.redirect(url)
+        }
     }
 
     return response

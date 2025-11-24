@@ -2,8 +2,17 @@ import Link from "next/link";
 import { Search, Filter, Download } from "lucide-react";
 import { getAllOrders } from "../../lib/services/orders";
 
-export default async function OrdersPage() {
-    const ordersData = await getAllOrders();
+import { OrderFilters } from "../../components/OrderFilters";
+
+export default async function OrdersPage({
+    searchParams,
+}: {
+    searchParams: { [key: string]: string | string[] | undefined };
+}) {
+    const status = typeof searchParams.status === 'string' ? searchParams.status : undefined;
+    const search = typeof searchParams.search === 'string' ? searchParams.search : undefined;
+
+    const ordersData = await getAllOrders({ status, search });
 
     // Transform data for display
     const orders = ordersData.map((order: any) => ({
@@ -62,25 +71,7 @@ export default async function OrdersPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="주문번호, 고객명으로 검색..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-900"
-                    />
-                </div>
-                <select className="px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-900">
-                    <option value="">전체 상태</option>
-                    <option value="pending">결제 대기</option>
-                    <option value="paid">결제 완료</option>
-                    <option value="preparing">준비 중</option>
-                    <option value="shipped">배송 중</option>
-                    <option value="delivered">배송 완료</option>
-                    <option value="cancelled">취소됨</option>
-                </select>
-            </div>
+            <OrderFilters />
 
             {/* Orders Table */}
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">

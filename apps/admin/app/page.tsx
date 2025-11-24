@@ -2,19 +2,41 @@ import {
   ShoppingBag,
   CreditCard,
   Package,
-  MessageCircle,
-  TrendingUp,
+  CheckCircle,
   Users
 } from "lucide-react";
+import Link from "next/link";
+import { getDashboardStats } from "../lib/services/dashboard";
 
-const STATS = [
-  { label: "New Orders", value: "12", icon: ShoppingBag, color: "bg-blue-500" },
-  { label: "Payment Pending", value: "5", icon: CreditCard, color: "bg-orange-500" },
-  { label: "Preparing", value: "8", icon: Package, color: "bg-purple-500" },
-  { label: "Inquiry", value: "3", icon: MessageCircle, color: "bg-green-500" },
-];
+export default async function Dashboard() {
+  const { stats, recentOrders, recentUsers } = await getDashboardStats();
 
-export default function Dashboard() {
+  const STATS = [
+    { label: "New Orders", value: stats.newOrders, icon: ShoppingBag, color: "bg-blue-500" },
+    { label: "Payment Pending", value: stats.paymentPending, icon: CreditCard, color: "bg-orange-500" },
+    { label: "Preparing", value: stats.preparing, icon: Package, color: "bg-purple-500" },
+    { label: "Delivered", value: stats.delivered, icon: CheckCircle, color: "bg-green-500" },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'preparing':
+        return 'bg-blue-100 text-blue-800';
+      case 'shipped':
+        return 'bg-purple-100 text-purple-800';
+      case 'delivered':
+        return 'bg-gray-100 text-gray-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -42,7 +64,7 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="p-6 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-bold text-gray-900">Recent Orders</h2>
-            <button className="text-sm text-blue-600 hover:underline">View All</button>
+            <Link href="/orders" className="text-sm text-blue-600 hover:underline">View All</Link>
           </div>
           <div className="p-6">
             <table className="w-full">
@@ -50,49 +72,61 @@ export default function Dashboard() {
                 <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <th className="pb-4">Order ID</th>
                   <th className="pb-4">Customer</th>
-                  <th className="pb-4">Product</th>
                   <th className="pb-4">Amount</th>
                   <th className="pb-4">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <tr key={i}>
-                    <td className="py-4 text-sm font-medium text-gray-900">#ORD-2024-{100 + i}</td>
-                    <td className="py-4 text-sm text-gray-600">Customer {i}</td>
-                    <td className="py-4 text-sm text-gray-600">Pure White Calla</td>
-                    <td className="py-4 text-sm text-gray-900">₩250,000</td>
-                    <td className="py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Paid
-                      </span>
-                    </td>
+                {recentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-4 text-center text-gray-500">No recent orders</td>
                   </tr>
-                ))}
+                ) : (
+                  recentOrders.map((order: any) => (
+                    <tr key={order.id}>
+                      <td className="py-4 text-sm font-medium text-gray-900">#{order.id.slice(0, 8)}</td>
+                      <td className="py-4 text-sm text-gray-600">
+                        {order.profiles?.name || order.guest_info?.name || "Guest"}
+                      </td>
+                      <td className="py-4 text-sm text-gray-900">₩{order.total_amount.toLocaleString()}</td>
+                      <td className="py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent Activity (New Users) */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
+            <h2 className="text-lg font-bold text-gray-900">New Users</h2>
           </div>
           <div className="p-6 space-y-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                  <Users size={14} className="text-gray-600" />
+            {recentUsers.length === 0 ? (
+              <p className="text-center text-gray-500">No new users</p>
+            ) : (
+              recentUsers.map((user: any) => (
+                <div key={user.id} className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <Users size={14} className="text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">
+                      <span className="font-medium">{user.name || user.email}</span> joined
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-900">
-                    <span className="font-medium">New User</span> registered
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -4,52 +4,84 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase/client";
+import { getUserOrders } from "../../lib/services/orders";
 
 import MyPageSidebar from "../../components/MyPageSidebar";
-
-// Mock order data
-const ORDERS = [
-    {
-        id: "ORD-2024-001",
-        date: "2024-01-15",
-        status: "배송완료",
-        statusType: "delivered",
-        items: [
-            { name: "클래식 로즈 부케", quantity: 1, price: 180000 },
-            { name: "화이트 피오니 부케", quantity: 1, price: 220000 },
-        ],
-        total: 400000,
-    },
-    {
-        id: "ORD-2024-002",
-        date: "2024-01-20",
-        status: "배송중",
-        statusType: "shipping",
-        items: [{ name: "프리미엄 캐스케이드 부케", quantity: 1, price: 350000 }],
-        total: 350000,
-    },
-];
 
 export default function MyPage() {
     const router = useRouter();
     const supabase = createClient();
     const [user, setUser] = useState<any>(null);
+    const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const checkUser = async () => {
+        const checkUserAndFetchOrders = async () => {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
                 router.push("/login");
-            } else {
-                setUser(user);
+                return;
             }
-            setLoading(false);
+
+            setUser(user);
+
+            // Fetch orders
+            try {
+                const userOrders = await getUserOrders(user.id);
+
+                // Transform data for UI
+                const formattedOrders = userOrders.map((order: any) => ({
+                    id: order.id,
+                    displayId: order.id.slice(0, 8).toUpperCase(),
+                    date: new Date(order.created_at).toLocaleDateString('ko-KR'),
+                    status: getStatusText(order.status),
+                    statusType: order.status,
+                    items: order.order_items.map((item: any) => ({
+                        name: item.products?.name || "Unknown Product",
+                        quantity: item.quantity,
+                        price: item.price_at_purchase
+                    })),
+                    total: order.total_amount,
+                }));
+
+                setOrders(formattedOrders);
+            } catch (error) {
+                console.error("Error loading orders:", error);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        checkUser();
+        checkUserAndFetchOrders();
     }, [router, supabase]);
+
+    const getStatusText = (status: string) => {
+        const statusMap: Record<string, string> = {
+            pending: '결제 대기',
+            paid: '결제 완료',
+            preparing: '준비 중',
+            shipped: '배송 중',
+            delivered: '배송 완료',
+            cancelled: '취소됨',
+        };
+        return statusMap[status] || status;
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'paid':
+            case 'delivered':
+                return 'bg-green-100 text-green-700';
+            case 'shipped':
+            case 'preparing':
+                return 'bg-blue-100 text-blue-700';
+            case 'cancelled':
+                return 'bg-red-100 text-red-700';
+            default:
+                return 'bg-gray-100 text-gray-700';
+        }
+    };
 
     if (loading) {
         return (
@@ -81,7 +113,7 @@ export default function MyPage() {
                     <div className="flex-1">
                         <h2 className="text-lg font-medium mb-8 text-orie-text">주문 내역</h2>
 
-                        {ORDERS.length === 0 ? (
+                        {orders.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-orie-text/60 mb-6">주문 내역이 없습니다</p>
                                 <Link
@@ -93,7 +125,7 @@ export default function MyPage() {
                             </div>
                         ) : (
                             <div className="flex flex-col gap-6">
-                                {ORDERS.map((order) => (
+                                {orders.map((order) => (
                                     <div
                                         key={order.id}
                                         className="border border-orie-text/10 p-6"
@@ -101,26 +133,21 @@ export default function MyPage() {
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
                                                 <p className="text-sm font-medium text-orie-text">
-                                                    {order.id}
+                                                    #{order.displayId}
                                                 </p>
                                                 <p className="text-xs text-orie-text/60 mt-1">
                                                     {order.date}
                                                 </p>
                                             </div>
                                             <span
-                                                className={`text-xs px-3 py-1 ${order.statusType === "delivered"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : order.statusType === "shipping"
-                                                        ? "bg-blue-100 text-blue-700"
-                                                        : "bg-gray-100 text-gray-700"
-                                                    }`}
+                                                className={`text-xs px-3 py-1 rounded-full ${getStatusColor(order.statusType)}`}
                                             >
                                                 {order.status}
                                             </span>
                                         </div>
 
                                         <div className="border-t border-orie-text/10 pt-4">
-                                            {order.items.map((item, idx) => (
+                                            {order.items.map((item: any, idx: number) => (
                                                 <div
                                                     key={idx}
                                                     className="flex justify-between text-sm py-2"

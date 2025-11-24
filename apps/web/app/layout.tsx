@@ -4,8 +4,24 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "ORIÉ Official Store",
-  description: "Luxury E-Commerce Platform",
+  title: {
+    default: "ORIÉ - Wedding Bouquet Shop",
+    template: "%s | ORIÉ",
+  },
+  description: "당신의 특별한 순간을 위한 프리미엄 웨딩 부케 샵, 오리에입니다.",
+  openGraph: {
+    title: "ORIÉ - Wedding Bouquet Shop",
+    description: "당신의 특별한 순간을 위한 프리미엄 웨딩 부케 샵, 오리에입니다.",
+    url: "https://orie-wedding.vercel.app",
+    siteName: "ORIÉ",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ORIÉ - Wedding Bouquet Shop",
+    description: "당신의 특별한 순간을 위한 프리미엄 웨딩 부케 샵, 오리에입니다.",
+  },
 };
 
 export default function RootLayout({

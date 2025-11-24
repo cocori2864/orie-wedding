@@ -3,8 +3,38 @@ import { ProductInfo } from "../../../components/pdp/ProductInfo";
 import { getProduct } from "../../../lib/services/products";
 import { notFound } from "next/navigation";
 
+import { Metadata } from "next";
+
 interface PageProps {
     params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { id } = await params;
+    const product = await getProduct(id);
+
+    if (!product) {
+        return {
+            title: "Product Not Found",
+        };
+    }
+
+    return {
+        title: product.name,
+        description: product.description,
+        openGraph: {
+            title: product.name,
+            description: product.description,
+            images: [
+                {
+                    url: product.image,
+                    width: 800,
+                    height: 600,
+                    alt: product.name,
+                },
+            ],
+        },
+    };
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {

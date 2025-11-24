@@ -1,11 +1,11 @@
 import { createClient } from '../supabase/server';
 
-export async function getAllOrders() {
-    const supabase = await createClient();
+export async function getAllOrders(filters?: { status?: string; search?: string }) {
+  const supabase = await createClient();
 
-    const { data, error } = await supabase
-        .from('orders')
-        .select(`
+  let query = supabase
+    .from('orders')
+    .select(`
       *,
       profiles (
         name,
@@ -20,22 +20,32 @@ export async function getAllOrders() {
         )
       )
     `)
-        .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching orders:', error);
-        return [];
-    }
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status);
+  }
 
-    return data;
+  if (filters?.search) {
+    query = query.ilike('id', `%${filters.search}%`);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching orders:', error);
+    return [];
+  }
+
+  return data;
 }
 
 export async function getOrderById(orderId: string) {
-    const supabase = await createClient();
+  const supabase = await createClient();
 
-    const { data, error } = await supabase
-        .from('orders')
-        .select(`
+  const { data, error } = await supabase
+    .from('orders')
+    .select(`
       *,
       profiles (
         name,
@@ -51,29 +61,29 @@ export async function getOrderById(orderId: string) {
         )
       )
     `)
-        .eq('id', orderId)
-        .single();
+    .eq('id', orderId)
+    .single();
 
-    if (error) {
-        console.error(`Error fetching order ${orderId}:`, error);
-        return null;
-    }
+  if (error) {
+    console.error(`Error fetching order ${orderId}:`, error);
+    return null;
+  }
 
-    return data;
+  return data;
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
-    const supabase = await createClient();
+  const supabase = await createClient();
 
-    const { error } = await supabase
-        .from('orders')
-        .update({ status })
-        .eq('id', orderId);
+  const { error } = await supabase
+    .from('orders')
+    .update({ status })
+    .eq('id', orderId);
 
-    if (error) {
-        console.error(`Error updating order ${orderId}:`, error);
-        return { success: false, error: error.message };
-    }
+  if (error) {
+    console.error(`Error updating order ${orderId}:`, error);
+    return { success: false, error: error.message };
+  }
 
-    return { success: true };
+  return { success: true };
 }
