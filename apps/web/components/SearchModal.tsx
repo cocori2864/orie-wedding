@@ -111,7 +111,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                         onClick={onClose}
                                         className="group"
                                     >
-                                        <div className="aspect-square bg-[#F0F0F0] mb-3 group-hover:opacity-80 transition-opacity" />
+                                        <div className="relative aspect-square bg-[#F0F0F0] mb-3 overflow-hidden group-hover:opacity-80 transition-opacity">
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                         <p className="text-xs text-orie-text/40 mb-1">
                                             {product.category}
                                         </p>
