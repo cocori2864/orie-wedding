@@ -32,9 +32,7 @@ export function ProductInfo({ id, name, price, description, image, category, flo
     const inWishlist = mounted ? isInWishlist(id) : false;
 
     const handleAddToCart = () => {
-        for (let i = 0; i < quantity; i++) {
-            addItem({ id, name, price, image });
-        }
+        addItem({ id, name, price, image }, quantity);
         setIsAdded(true);
         setTimeout(() => setIsAdded(false), 2000);
     };
@@ -52,9 +50,9 @@ export function ProductInfo({ id, name, price, description, image, category, flo
         <div className="w-full md:w-1/2 md:pl-20 md:sticky md:top-24 h-fit">
             <div className="mb-8 flex justify-between items-start">
                 <div>
-                    <p className="text-xs text-orie-text/40 mb-2">웨딩 부케</p> {/* Updated category */}
-                    <h1 className="text-3xl font-medium text-orie-text mb-2">Pure White Calla</h1> {/* Updated name */}
-                    <p className="text-orie-text/60 text-sm">Elegant Calla Lily | Minimalist | Classic Wedding</p> {/* Updated flowers */}
+                    <p className="text-xs text-orie-text/60 mb-2 uppercase tracking-wider">{category || "웨딩 부케"}</p>
+                    <h1 className="text-3xl font-serif font-normal text-orie-text mb-2">{name}</h1>
+                    <p className="text-orie-text/60 text-sm">{flowers}</p>
                 </div>
                 <button
                     onClick={handleToggleWishlist}

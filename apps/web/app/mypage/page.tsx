@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase/client";
 
+import MyPageSidebar from "../../components/MyPageSidebar";
+
 // Mock order data
 const ORDERS = [
     {
@@ -49,11 +51,6 @@ export default function MyPage() {
         checkUser();
     }, [router, supabase]);
 
-    const handleLogout = async () => {
-        await supabase.auth.signOut();
-        router.push("/");
-    };
-
     if (loading) {
         return (
             <main className="pt-32 pb-20 min-h-screen">
@@ -78,34 +75,7 @@ export default function MyPage() {
 
                 <div className="flex flex-col md:flex-row gap-12">
                     {/* Sidebar */}
-                    <div className="w-full md:w-[200px] flex-shrink-0">
-                        <nav className="flex flex-row md:flex-col gap-4">
-                            <Link
-                                href="/mypage"
-                                className="text-sm text-orie-text font-medium pb-2 border-b-2 border-orie-text"
-                            >
-                                주문 내역
-                            </Link>
-                            <Link
-                                href="/mypage/profile"
-                                className="text-sm text-orie-text/60 hover:text-orie-text pb-2 border-b-2 border-transparent"
-                            >
-                                회원 정보
-                            </Link>
-                            <Link
-                                href="/mypage/address"
-                                className="text-sm text-orie-text/60 hover:text-orie-text pb-2 border-b-2 border-transparent"
-                            >
-                                배송지 관리
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="text-sm text-orie-text/60 hover:text-orie-text text-left pb-2 border-b-2 border-transparent"
-                            >
-                                로그아웃
-                            </button>
-                        </nav>
-                    </div>
+                    <MyPageSidebar />
 
                     {/* Content */}
                     <div className="flex-1">
@@ -139,10 +109,10 @@ export default function MyPage() {
                                             </div>
                                             <span
                                                 className={`text-xs px-3 py-1 ${order.statusType === "delivered"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : order.statusType === "shipping"
-                                                            ? "bg-blue-100 text-blue-700"
-                                                            : "bg-gray-100 text-gray-700"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : order.statusType === "shipping"
+                                                        ? "bg-blue-100 text-blue-700"
+                                                        : "bg-gray-100 text-gray-700"
                                                     }`}
                                             >
                                                 {order.status}

@@ -14,15 +14,16 @@ module.exports = {
             colors: {
                 orie: {
                     bg: "#F8F6F3",
-                    text: "#70798F",
+                    text: "#2F2F2F",
+                    "text-secondary": "#bfc5b6",
                     "bg-secondary": "#FAF8F5",
                     white: "#FFFFFF",
                     black: "#121212"
                 }
             },
             fontFamily: {
-                sans: ['Pretendard', 'sans-serif'],
-                serif: ['Helvetica Now Display', 'serif']
+                sans: ['Baskervville', 'serif'],
+                serif: ['Baskervville', 'serif']
             },
             keyframes: {
                 fadeInUp: {

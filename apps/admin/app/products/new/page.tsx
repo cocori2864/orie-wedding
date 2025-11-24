@@ -2,16 +2,62 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, X } from "lucide-react";
+import { createClient } from "../../../lib/supabase/client";
 
 export default function NewProductPage() {
-    const [images, setImages] = useState<string[]>([]);
+    const router = useRouter();
+    const supabase = createClient();
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+        color: "",
+        style: "",
+        flowers: "",
+        status: "active",
+        image: "",
+    });
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            // Mock upload - in real app, upload to server/s3
-            const url = URL.createObjectURL(e.target.files[0]);
-            setImages([...images, url]);
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async () => {
+        if (!formData.name || !formData.price) {
+            alert("Please fill in required fields (Name, Price)");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const { error } = await supabase.from('products').insert({
+                name: formData.name,
+                description: formData.description,
+                price: parseInt(formData.price),
+                stock: parseInt(formData.stock) || 0,
+                category: formData.category,
+                color: formData.color,
+                style: formData.style,
+                flowers: formData.flowers,
+                status: formData.status,
+                image: formData.image || "/images/bouquet_01.png", // Default fallback
+            });
+
+            if (error) throw error;
+
+            alert("Product created successfully!");
+            router.push("/products");
+        } catch (error: any) {
+            console.error("Error creating product:", error);
+            alert("Failed to create product: " + error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -32,9 +78,12 @@ export default function NewProductPage() {
                         <h2 className="text-lg font-bold text-gray-900 mb-4">Basic Information</h2>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Product Name</label>
+                            <label className="text-sm font-medium text-gray-700">Product Name *</label>
                             <input
                                 type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
                                 placeholder="e.g. Classic Rose Bouquet"
                                 className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                             />
@@ -44,6 +93,9 @@ export default function NewProductPage() {
                             <label className="text-sm font-medium text-gray-700">Description</label>
                             <textarea
                                 rows={4}
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
                                 placeholder="Product description..."
                                 className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                             />
@@ -56,9 +108,12 @@ export default function NewProductPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Price (₩)</label>
+                                <label className="text-sm font-medium text-gray-700">Price (₩) *</label>
                                 <input
                                     type="number"
+                                    name="price"
+                                    value={formData.price}
+                                    onChange={handleChange}
                                     placeholder="0"
                                     className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                                 />
@@ -67,6 +122,9 @@ export default function NewProductPage() {
                                 <label className="text-sm font-medium text-gray-700">Stock Quantity</label>
                                 <input
                                     type="number"
+                                    name="stock"
+                                    value={formData.stock}
+                                    onChange={handleChange}
                                     placeholder="0"
                                     className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                                 />
@@ -81,7 +139,12 @@ export default function NewProductPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Color</label>
-                                <select className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400">
+                                <select
+                                    name="color"
+                                    value={formData.color}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
+                                >
                                     <option value="">Select Color</option>
                                     <option value="White">White</option>
                                     <option value="Pink">Pink</option>
@@ -92,7 +155,12 @@ export default function NewProductPage() {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Style</label>
-                                <select className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400">
+                                <select
+                                    name="style"
+                                    value={formData.style}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
+                                >
                                     <option value="">Select Style</option>
                                     <option value="Round">Round</option>
                                     <option value="Drop">Drop</option>
@@ -104,6 +172,9 @@ export default function NewProductPage() {
                             <label className="text-sm font-medium text-gray-700">Flowers Used</label>
                             <input
                                 type="text"
+                                name="flowers"
+                                value={formData.flowers}
+                                onChange={handleChange}
                                 placeholder="e.g. Rose, Tulip, Lily"
                                 className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                             />
@@ -116,7 +187,12 @@ export default function NewProductPage() {
                     {/* Status */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 mb-4">Status</h2>
-                        <select className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400">
+                        <select
+                            name="status"
+                            value={formData.status}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
+                        >
                             <option value="active">Active</option>
                             <option value="draft">Draft</option>
                             <option value="archived">Archived</option>
@@ -129,7 +205,14 @@ export default function NewProductPage() {
                         <div className="space-y-2">
                             {["Classic", "Natural", "Romantic", "Premium"].map((cat) => (
                                 <label key={cat} className="flex items-center gap-2">
-                                    <input type="radio" name="category" value={cat} className="text-gray-900 focus:ring-gray-900" />
+                                    <input
+                                        type="radio"
+                                        name="category"
+                                        value={cat}
+                                        checked={formData.category === cat}
+                                        onChange={handleChange}
+                                        className="text-gray-900 focus:ring-gray-900"
+                                    />
                                     <span className="text-sm text-gray-700">{cat}</span>
                                 </label>
                             ))}
@@ -138,29 +221,26 @@ export default function NewProductPage() {
 
                     {/* Images */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Product Images</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Product Image</h2>
 
-                        <div className="grid grid-cols-2 gap-2 mb-4">
-                            {images.map((img, idx) => (
-                                <div key={idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden group">
-                                    <img src={img} alt="Preview" className="w-full h-full object-cover" />
-                                    <button
-                                        onClick={() => setImages(images.filter((_, i) => i !== idx))}
-                                        className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <X size={12} />
-                                    </button>
-                                </div>
-                            ))}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Image URL</label>
+                            <input
+                                type="text"
+                                name="image"
+                                value={formData.image}
+                                onChange={handleChange}
+                                placeholder="e.g. /images/bouquet_01.png"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
+                            />
+                            <p className="text-xs text-gray-500">Enter a public URL or local path like /images/...</p>
                         </div>
 
-                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                                <p className="text-xs text-gray-500">Click to upload image</p>
+                        {formData.image && (
+                            <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden mt-4">
+                                <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
                             </div>
-                            <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
-                        </label>
+                        )}
                     </div>
                 </div>
             </div>
@@ -172,8 +252,12 @@ export default function NewProductPage() {
                 >
                     Cancel
                 </Link>
-                <button className="px-6 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800">
-                    Save Product
+                <button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="px-6 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+                >
+                    {loading ? "Saving..." : "Save Product"}
                 </button>
             </div>
         </div>

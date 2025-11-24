@@ -1,17 +1,54 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
-
-const PRODUCTS = [
-    { id: "1", name: "Classic Rose Bouquet", price: 180000, category: "Classic", stock: 15, status: "Active" },
-    { id: "2", name: "White Peony Bouquet", price: 220000, category: "Classic", stock: 8, status: "Active" },
-    { id: "3", name: "Wild Flower Bouquet", price: 150000, category: "Natural", stock: 20, status: "Active" },
-    { id: "4", name: "Eucalyptus Greenery", price: 160000, category: "Natural", stock: 12, status: "Active" },
-    { id: "5", name: "Blush Pink Bouquet", price: 200000, category: "Romantic", stock: 0, status: "Out of Stock" },
-];
+import { createClient } from "../../lib/supabase/client";
 
 export default function ProductsPage() {
+    const supabase = createClient();
+    const [products, setProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const fetchProducts = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setProducts(data || []);
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this product?")) return;
+
+        try {
+            const { error } = await supabase
+                .from('products')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Refresh list
+            fetchProducts();
+        } catch (error) {
+            console.error("Error deleting product:", error);
+            alert("Failed to delete product");
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -66,32 +103,45 @@ export default function ProductsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {PRODUCTS.map((product) => (
-                            <tr key={product.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{product.name}</td>
-                                <td className="px-6 py-4 text-sm text-gray-500">{product.category}</td>
-                                <td className="px-6 py-4 text-sm text-gray-900">₩{product.price.toLocaleString()}</td>
-                                <td className="px-6 py-4 text-sm text-gray-500">{product.stock}</td>
-                                <td className="px-6 py-4">
-                                    <span
-                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === "Active"
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-10 text-center text-gray-500">Loading products...</td>
+                            </tr>
+                        ) : products.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-10 text-center text-gray-500">No products found.</td>
+                            </tr>
+                        ) : (
+                            products.map((product) => (
+                                <tr key={product.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{product.name}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">{product.category}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-900">₩{product.price.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">{product.stock}</td>
+                                    <td className="px-6 py-4">
+                                        <span
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === "active"
                                                 ? "bg-green-100 text-green-800"
                                                 : "bg-red-100 text-red-800"
-                                            }`}
-                                    >
-                                        {product.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right space-x-3">
-                                    <button className="text-gray-400 hover:text-blue-600 transition-colors">
-                                        <Edit size={18} />
-                                    </button>
-                                    <button className="text-gray-400 hover:text-red-600 transition-colors">
-                                        <Trash2 size={18} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                                                }`}
+                                        >
+                                            {product.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right space-x-3">
+                                        <button className="text-gray-400 hover:text-blue-600 transition-colors">
+                                            <Edit size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(product.id)}
+                                            className="text-gray-400 hover:text-red-600 transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
