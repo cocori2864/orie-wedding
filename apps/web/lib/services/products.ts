@@ -1,5 +1,4 @@
 import { createClient } from '../supabase/server';
-import { ALL_PRODUCTS, PRODUCT_DETAILS } from '../../data/products';
 
 export async function getProducts() {
     const supabase = await createClient();
@@ -11,17 +10,10 @@ export async function getProducts() {
 
     if (error) {
         console.error('Error fetching products:', error);
-        // Fallback to mock data
-        return ALL_PRODUCTS;
+        return [];
     }
 
-    // If no products in DB, use mock data
-    if (!data || data.length === 0) {
-        console.log('No products in Supabase, using mock data');
-        return ALL_PRODUCTS;
-    }
-
-    return data;
+    return data || [];
 }
 
 export async function getProduct(id: string) {
@@ -34,13 +26,7 @@ export async function getProduct(id: string) {
 
     if (error) {
         console.error(`Error fetching product ${id}:`, error);
-        // Fallback to mock data
-        return PRODUCT_DETAILS[id] || null;
-    }
-
-    // If product not found in DB, try mock data
-    if (!data) {
-        return PRODUCT_DETAILS[id] || null;
+        return null;
     }
 
     return data;
