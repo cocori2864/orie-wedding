@@ -7,11 +7,12 @@ import { DeleteProductButton } from "../../components/DeleteProductButton";
 export default async function ProductsPage({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | string[] | undefined };
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-    const category = typeof searchParams.category === 'string' ? searchParams.category : undefined;
-    const status = typeof searchParams.status === 'string' ? searchParams.status : undefined;
-    const search = typeof searchParams.search === 'string' ? searchParams.search : undefined;
+    const params = await searchParams;
+    const category = typeof params.category === 'string' ? params.category : undefined;
+    const status = typeof params.status === 'string' ? params.status : undefined;
+    const search = typeof params.search === 'string' ? params.search : undefined;
 
     const products = await getProducts({ category, status, search });
 

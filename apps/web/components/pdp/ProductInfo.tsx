@@ -122,7 +122,15 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             <div className="flex flex-col gap-4">
                 {/* Buttons */}
                 <button
-                    onClick={() => setShowReservationModal(true)}
+                    onClick={async () => {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) {
+                            alert("로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.");
+                            router.push("/login");
+                            return;
+                        }
+                        setShowReservationModal(true);
+                    }}
                     className="w-full py-4 border border-orie-text bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 >
                     예약하기

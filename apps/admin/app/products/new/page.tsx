@@ -4,11 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, X } from "lucide-react";
-import { createClient } from "../../../lib/supabase/client";
+import { createProduct } from "../../actions/createProduct";
 
 export default function NewProductPage() {
     const router = useRouter();
-    const supabase = createClient();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
@@ -36,7 +35,7 @@ export default function NewProductPage() {
 
         setLoading(true);
         try {
-            const { error } = await supabase.from('products').insert({
+            const { error } = await createProduct({
                 name: formData.name,
                 description: formData.description,
                 price: parseInt(formData.price),

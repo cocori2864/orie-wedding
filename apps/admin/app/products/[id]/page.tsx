@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, X } from "lucide-react";
-import { createClient } from "../../../lib/supabase/client";
+import { getProduct, updateProduct } from "../../actions/productActions";
 
 export default function EditProductPage() {
     const router = useRouter();
     const params = useParams();
-    const supabase = createClient();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
@@ -28,11 +27,7 @@ export default function EditProductPage() {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('products')
-                    .select('*')
-                    .eq('id', params.id)
-                    .single();
+                const { data, error } = await getProduct(params.id as string);
 
                 if (error) throw error;
 
@@ -62,7 +57,7 @@ export default function EditProductPage() {
         if (params.id) {
             fetchProduct();
         }
-    }, [params.id, router, supabase]);
+    }, [params.id, router]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -77,21 +72,18 @@ export default function EditProductPage() {
 
         setSaving(true);
         try {
-            const { error } = await supabase
-                .from('products')
-                .update({
-                    name: formData.name,
-                    description: formData.description,
-                    price: parseInt(formData.price),
-                    stock: parseInt(formData.stock) || 0,
-                    category: formData.category,
-                    color: formData.color,
-                    style: formData.style,
-                    flowers: formData.flowers,
-                    status: formData.status,
-                    image: formData.image,
-                })
-                .eq('id', params.id);
+            const { error } = await updateProduct(params.id as string, {
+                name: formData.name,
+                description: formData.description,
+                price: parseInt(formData.price),
+                stock: parseInt(formData.stock) || 0,
+                category: formData.category,
+                color: formData.color,
+                style: formData.style,
+                flowers: formData.flowers,
+                status: formData.status,
+                image: formData.image,
+            });
 
             if (error) throw error;
 

@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Search, Mail, Phone, Calendar, Edit, Trash2 } from "lucide-react";
-import { createClient } from "../../lib/supabase/client";
+import { getCustomers } from "../actions/getCustomers";
 
 export default function CustomersPage() {
-    const supabase = createClient();
     const [customers, setCustomers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -16,10 +15,7 @@ export default function CustomersPage() {
 
     const fetchCustomers = async () => {
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const { data, error } = await getCustomers();
 
             if (error) throw error;
             setCustomers(data || []);

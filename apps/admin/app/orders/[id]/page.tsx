@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Printer, Truck } from "lucide-react";
-import { createClient } from "../../../lib/supabase/server";
+import { createAdminClient } from "../../../lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { OrderStatusActions } from "../../../components/OrderStatusActions";
 
@@ -10,7 +10,7 @@ interface PageProps {
 
 export default async function OrderDetailPage({ params }: PageProps) {
     const { id } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { data: order, error } = await supabase
         .from('orders')

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
-import AddressSearch from "../../components/ui/AddressSearch";
+
 
 export default function SignupPage() {
     const [email, setEmail] = useState("");
@@ -12,9 +12,7 @@ export default function SignupPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
-    const [address, setAddress] = useState("");
-    const [detailAddress, setDetailAddress] = useState("");
-    const [zonecode, setZonecode] = useState("");
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -59,9 +57,6 @@ export default function SignupPage() {
                     data: {
                         name,
                         phone,
-                        address,
-                        detailAddress,
-                        zonecode,
                     },
                 },
             });
@@ -128,42 +123,7 @@ export default function SignupPage() {
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium text-orie-text/60 uppercase tracking-wider">
-                            주소
-                        </label>
-                        <div className="flex gap-2 mb-2">
-                            <input
-                                type="text"
-                                value={zonecode}
-                                readOnly
-                                className="w-24 p-3 bg-gray-50 border border-orie-text/20 text-sm focus:outline-none"
-                                placeholder="우편번호"
-                            />
-                            <AddressSearch
-                                onComplete={(data) => {
-                                    setAddress(data.address);
-                                    setZonecode(data.zonecode);
-                                }}
-                            />
-                        </div>
-                        <input
-                            type="text"
-                            value={address}
-                            readOnly
-                            className="w-full p-3 bg-gray-50 border border-orie-text/20 text-sm focus:outline-none mb-2"
-                            placeholder="주소"
-                            required
-                        />
-                        <input
-                            type="text"
-                            value={detailAddress}
-                            onChange={(e) => setDetailAddress(e.target.value)}
-                            className="w-full p-3 bg-white border border-orie-text/20 text-sm focus:outline-none focus:border-orie-text transition-colors"
-                            placeholder="상세 주소를 입력하세요"
-                            required
-                        />
-                    </div>
+
 
                     <div className="space-y-2">
                         <label className="text-xs font-medium text-orie-text/60 uppercase tracking-wider">
