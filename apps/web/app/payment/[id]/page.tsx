@@ -16,7 +16,6 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
     const { id } = use(params);
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [paymentMethod, setPaymentMethod] = useState<'card' | 'transfer'>('card');
     const router = useRouter();
     const supabase = createClient();
 
@@ -44,8 +43,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         const { IMP } = window;
         IMP.init('imp00000000'); // 테스트용 가맹점 식별코드
 
-        const deposit = 50000;
-        const finalAmount = Math.max(0, order.total_amount - deposit);
+        const finalAmount = order.final_payment_request_amount ?? Math.max(0, order.total_amount - 50000);
 
         if (finalAmount === 0) {
             alert("결제할 잔금이 없습니다.");
@@ -78,25 +76,10 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         });
     };
 
-    const handleTransferRequest = async () => {
-        if (!confirm("입금 확인 요청을 하시겠습니까?")) return;
-
-        const deposit = 50000;
-        const finalAmount = Math.max(0, order.total_amount - deposit);
-
-        const result = await processPayment(order.id, null, finalAmount, 'transfer');
-        if (result.success) {
-            alert('입금 확인 요청이 접수되었습니다. 관리자 확인 후 완료 처리됩니다.');
-            router.push('/mypage');
-        } else {
-            alert('요청 처리에 실패했습니다.');
-        }
-    };
-
     if (loading) return <div className="p-10 text-center">Loading...</div>;
 
-    const deposit = 50000;
-    const finalAmount = Math.max(0, order.total_amount - deposit);
+    const finalAmount = order.final_payment_request_amount ?? Math.max(0, order.total_amount - 50000);
+    const deposit = order.total_amount - finalAmount;
 
     return (
         <div className="max-w-2xl mx-auto p-6 pt-20">
@@ -130,61 +113,20 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
                 </div>
             </div>
 
-            {/* 결제 수단 선택 */}
-            <div className="mb-8">
-                <h3 className="text-lg font-medium mb-4">결제 수단 선택</h3>
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => setPaymentMethod('card')}
-                        className={`flex-1 py-4 border rounded-lg font-medium transition-colors ${paymentMethod === 'card'
-                                ? 'border-blue-600 bg-blue-50 text-blue-600'
-                                : 'border-gray-200 hover:bg-gray-50'
-                            }`}
-                    >
-                        카드 / 간편결제
-                    </button>
-                    <button
-                        onClick={() => setPaymentMethod('transfer')}
-                        className={`flex-1 py-4 border rounded-lg font-medium transition-colors ${paymentMethod === 'transfer'
-                                ? 'border-blue-600 bg-blue-50 text-blue-600'
-                                : 'border-gray-200 hover:bg-gray-50'
-                            }`}
-                    >
-                        무통장 입금
-                    </button>
+            <div>
+                <button
+                    onClick={handleCardPayment}
+                    className="w-full bg-orie-text text-white py-4 text-lg font-semibold hover:opacity-90 transition-opacity"
+                >
+                    {finalAmount.toLocaleString()}원 결제하기 (카드/간편결제)
+                </button>
+                <p className="text-center text-sm text-gray-500 mt-4">
+                    KG이니시스를 통해 안전하게 결제됩니다.
+                </p>
+                <div className="mt-6 p-4 bg-gray-50 rounded text-sm text-gray-600 text-center">
+                    <p>무통장 입금을 원하시는 경우, 알림톡으로 안내된 계좌로 입금해주시면 됩니다.</p>
                 </div>
             </div>
-
-            {paymentMethod === 'card' ? (
-                <div>
-                    <button
-                        onClick={handleCardPayment}
-                        className="w-full bg-orie-text text-white py-4 text-lg font-semibold hover:opacity-90 transition-opacity"
-                    >
-                        {finalAmount.toLocaleString()}원 결제하기
-                    </button>
-                    <p className="text-center text-sm text-gray-500 mt-4">
-                        KG이니시스를 통해 안전하게 결제됩니다.
-                    </p>
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                        <h4 className="font-bold text-gray-900 mb-2">입금 계좌 안내</h4>
-                        <p className="text-lg text-blue-600 font-medium mb-1">국민은행 123-456-7890</p>
-                        <p className="text-gray-600">예금주: 오리에</p>
-                        <p className="text-sm text-gray-500 mt-4">
-                            * 입금자명과 주문자명이 일치해야 빠른 확인이 가능합니다.
-                        </p>
-                    </div>
-                    <button
-                        onClick={handleTransferRequest}
-                        className="w-full bg-orie-text text-white py-4 text-lg font-semibold hover:opacity-90 transition-opacity"
-                    >
-                        입금 확인 요청
-                    </button>
-                </div>
-            )}
         </div>
     );
 }

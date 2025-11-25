@@ -3,17 +3,25 @@
 import { useState } from "react";
 import { createClient } from "../lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { updateOrderStatusToProductionCompleted } from "../app/actions/updateOrderStatus";
 
 interface OrderStatusActionsProps {
     orderId: string;
     currentStatus: string;
     finalPaymentStatus?: string;
+    customerPhone?: string;
+    customerName?: string;
+    totalAmount: number;
 }
 
-export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus }: OrderStatusActionsProps) {
+export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus, customerPhone, customerName, totalAmount }: OrderStatusActionsProps) {
     const supabase = createClient();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+
+    // 잔금 요청 모달
+    const [showAmountModal, setShowAmountModal] = useState(false);
+    const [requestAmount, setRequestAmount] = useState(Math.max(0, totalAmount - 50000));
 
     const updateStatus = async (newStatus: string, message: string) => {
         if (!confirm("상태를 변경하시겠습니까?")) return;
@@ -56,6 +64,30 @@ export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus 
         setLoading(false);
     };
 
+    const handleProductionCompleted = async () => {
+        if (requestAmount < 0) {
+            alert("유효한 잔금 금액을 입력해주세요.");
+            return;
+        }
+
+        setLoading(true);
+        const result = await updateOrderStatusToProductionCompleted(
+            orderId,
+            requestAmount,
+            customerPhone || '',
+            customerName || ''
+        );
+
+        if (result.success) {
+            alert("제작 완료 처리되었습니다. 알림톡이 발송되었습니다.");
+            setShowAmountModal(false);
+            router.refresh();
+        } else {
+            alert("처리 중 오류가 발생했습니다: " + result.error);
+        }
+        setLoading(false);
+    };
+
     return (
         <div className="space-y-3">
             {currentStatus === 'pending' && (
@@ -78,7 +110,7 @@ export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus 
             )}
             {currentStatus === 'confirmed' && (
                 <button
-                    onClick={() => updateStatus('production_completed', '제작 완료 처리되었습니다. 잔금 결제 요청이 발송됩니다.')}
+                    onClick={() => setShowAmountModal(true)}
                     disabled={loading}
                     className="w-full py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
                 >
@@ -115,6 +147,45 @@ export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus 
                 >
                     주문 취소
                 </button>
+            )}
+
+            {/* 잔금 요청 모달 */}
+            {showAmountModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white w-full max-w-sm p-6 rounded-lg shadow-xl">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900">잔금 요청 금액 설정</h3>
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">잔금 금액</label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2 text-gray-500">₩</span>
+                                <input
+                                    type="number"
+                                    value={requestAmount}
+                                    onChange={(e) => setRequestAmount(Number(e.target.value))}
+                                    className="w-full border border-gray-300 rounded-md pl-8 pr-3 py-2 focus:ring-purple-500 focus:border-purple-500"
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">
+                                총 금액: {totalAmount.toLocaleString()}원 / 기본 예약금: 50,000원
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowAmountModal(false)}
+                                className="flex-1 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleProductionCompleted}
+                                disabled={loading}
+                                className="flex-1 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                            >
+                                {loading ? '처리중...' : '확인 및 발송'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

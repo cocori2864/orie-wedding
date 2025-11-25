@@ -191,6 +191,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
                             orderId={order.id}
                             currentStatus={order.status}
                             finalPaymentStatus={order.final_payment_status}
+                            customerPhone={order.customer_phone}
+                            customerName={order.customer_name}
+                            totalAmount={order.total_amount}
                         />
                     </div>
                 </div>
