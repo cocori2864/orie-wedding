@@ -21,6 +21,9 @@ export default function CheckoutPage() {
     const [address, setAddress] = useState("");
     const [detailAddress, setDetailAddress] = useState("");
     const [note, setNote] = useState("");
+
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"CARD" | "EASY_PAY" | "TRANSFER" | "VIRTUAL_ACCOUNT">("CARD");
+    const [useEscrow, setUseEscrow] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const subtotal = getSubtotal();
@@ -83,7 +86,8 @@ export default function CheckoutPage() {
                 const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
                 const tossPayments = await loadTossPayments(clientKey);
 
-                await tossPayments.requestPayment("카드", {
+                let method = "카드";
+                const paymentOptions: any = {
                     amount: subtotal,
                     orderId: result.orderId || "",
                     orderName: items && items.length > 1 ? `${items[0]?.name || '상품'} 외 ${items.length - 1}건` : items[0]?.name || '상품',
@@ -91,7 +95,21 @@ export default function CheckoutPage() {
                     failUrl: `${window.location.origin}/payment/fail`,
                     customerEmail: email || user?.email || "",
                     customerName: name,
-                });
+                };
+
+                if (selectedPaymentMethod === "EASY_PAY") {
+                    // 간편결제는 카드 결제창에서 선택 가능
+                    method = "카드";
+                } else if (selectedPaymentMethod === "TRANSFER") {
+                    method = "계좌이체";
+                    if (useEscrow) paymentOptions.useEscrow = true;
+                } else if (selectedPaymentMethod === "VIRTUAL_ACCOUNT") {
+                    method = "가상계좌";
+                    if (useEscrow) paymentOptions.useEscrow = true;
+                    paymentOptions.validHours = 24;
+                }
+
+                await tossPayments.requestPayment(method as any, paymentOptions);
             } else {
                 alert(`주문 생성 실패: ${result.error}`);
                 setLoading(false);
@@ -218,6 +236,76 @@ export default function CheckoutPage() {
                                 </div>
                             </section>
                         )}
+
+                        {/* 4. Payment Method */}
+                        <section>
+                            <h2 className="text-xl font-medium text-orie-text mb-6 pb-4 border-b border-orie-text/10">
+                                결제 수단
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => setSelectedPaymentMethod("CARD")}
+                                    className={`p-4 border rounded-md text-left transition-all ${selectedPaymentMethod === "CARD"
+                                        ? "border-orie-text bg-orie-text/5 ring-1 ring-orie-text"
+                                        : "border-orie-text/20 hover:border-orie-text/50"
+                                        }`}
+                                >
+                                    <div className="font-medium text-orie-text">신용/체크카드</div>
+                                    <div className="text-xs text-orie-text/60 mt-1">모든 카드 지원</div>
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPaymentMethod("EASY_PAY")}
+                                    className={`p-4 border rounded-md text-left transition-all ${selectedPaymentMethod === "EASY_PAY"
+                                        ? "border-orie-text bg-orie-text/5 ring-1 ring-orie-text"
+                                        : "border-orie-text/20 hover:border-orie-text/50"
+                                        }`}
+                                >
+                                    <div className="font-medium text-orie-text">간편결제</div>
+                                    <div className="text-xs text-orie-text/60 mt-1">카카오페이, 네이버페이, 토스페이 등</div>
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPaymentMethod("TRANSFER")}
+                                    className={`p-4 border rounded-md text-left transition-all ${selectedPaymentMethod === "TRANSFER"
+                                        ? "border-orie-text bg-orie-text/5 ring-1 ring-orie-text"
+                                        : "border-orie-text/20 hover:border-orie-text/50"
+                                        }`}
+                                >
+                                    <div className="font-medium text-orie-text">실시간 계좌이체</div>
+                                    <div className="text-xs text-orie-text/60 mt-1">은행 계좌에서 즉시 출금</div>
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPaymentMethod("VIRTUAL_ACCOUNT")}
+                                    className={`p-4 border rounded-md text-left transition-all ${selectedPaymentMethod === "VIRTUAL_ACCOUNT"
+                                        ? "border-orie-text bg-orie-text/5 ring-1 ring-orie-text"
+                                        : "border-orie-text/20 hover:border-orie-text/50"
+                                        }`}
+                                >
+                                    <div className="font-medium text-orie-text">가상계좌</div>
+                                    <div className="text-xs text-orie-text/60 mt-1">무통장 입금</div>
+                                </button>
+                            </div>
+
+                            {selectedPaymentMethod === "EASY_PAY" && (
+                                <div className="mt-4 p-3 bg-blue-50 text-blue-700 text-xs rounded-md">
+                                    💡 결제창이 뜨면 <strong>[카드]</strong> 탭 또는 <strong>[간편결제]</strong> 메뉴에서 카카오페이/네이버페이를 선택해주세요.
+                                </div>
+                            )}
+
+                            {(selectedPaymentMethod === "TRANSFER" || selectedPaymentMethod === "VIRTUAL_ACCOUNT") && (
+                                <div className="mt-4 flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="escrow"
+                                        checked={useEscrow}
+                                        onChange={(e) => setUseEscrow(e.target.checked)}
+                                        className="w-4 h-4 accent-orie-text"
+                                    />
+                                    <label htmlFor="escrow" className="text-sm text-orie-text cursor-pointer">
+                                        에스크로(구매안전) 서비스 사용
+                                    </label>
+                                </div>
+                            )}
+                        </section>
                     </div>
 
                     {/* Right: Order Summary */}
@@ -255,7 +343,12 @@ export default function CheckoutPage() {
                                 disabled={loading}
                                 className="w-full py-4 bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 rounded-md mb-3"
                             >
-                                {loading ? "처리 중..." : "토스페이먼츠로 결제하기"}
+                                {loading ? "처리 중..." :
+                                    selectedPaymentMethod === "VIRTUAL_ACCOUNT" ? "가상계좌 발급받기" :
+                                        selectedPaymentMethod === "TRANSFER" ? "계좌이체하기" :
+                                            selectedPaymentMethod === "CARD" ? "카드 결제하기" :
+                                                "결제하기"
+                                }
                             </button>
 
                             <p className="text-xs text-center text-orie-text/60">
