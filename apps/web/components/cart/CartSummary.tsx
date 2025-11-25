@@ -26,12 +26,9 @@ export function CartSummary({ subtotal }: { subtotal: number }) {
                 <span>₩{total.toLocaleString()}</span>
             </div>
 
-            <Link
-                href="/checkout"
-                className="block w-full py-4 bg-orie-text text-white text-sm font-semibold hover:bg-[#5A6275] transition-colors text-center"
-            >
-                Checkout
-            </Link>
+            <div className="text-center text-sm text-orie-text/60 py-4 border border-orie-text/20">
+                결제 시스템 리뉴얼 중입니다.
+            </div>
         </div>
     );
 }

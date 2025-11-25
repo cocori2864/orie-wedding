@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCartStore } from "../../store/cartStore";
-import { useWishlistStore } from "../../store/wishlistStore";
-
+import { createClient } from "../../lib/supabase/client";
 import { BouquetOptions } from "./BouquetOptions";
 
 interface ProductInfoProps {
@@ -15,35 +13,83 @@ interface ProductInfoProps {
     image?: string;
     category?: string;
     flowers?: string;
+    color?: string;
 }
 
-export function ProductInfo({ id, name, price, description, image, category, flowers }: ProductInfoProps) {
+export function ProductInfo({ id, name, price, description, image, category, flowers, color }: ProductInfoProps) {
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
     const [mounted, setMounted] = useState(false);
+
+    // Option States
+    const [weddingDate, setWeddingDate] = useState<Date | null>(null);
+    const [weddingTime, setWeddingTime] = useState("");
+    const [venue, setVenue] = useState("");
+    const [pickupLocation, setPickupLocation] = useState("");
+    const [corsageCount, setCorsageCount] = useState(0);
+    const [requests, setRequests] = useState("");
+
+    const [showReservationModal, setShowReservationModal] = useState(false);
+
     const router = useRouter();
-    const { addItem } = useCartStore();
-    const { isInWishlist, toggleItem } = useWishlistStore();
+    const supabase = createClient();
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const inWishlist = mounted ? isInWishlist(id) : false;
+    const handleReserve = async () => {
+        if (!weddingDate || !weddingTime || !venue || !pickupLocation) {
+            alert("예식 정보와 수령 장소를 모두 입력해주세요.");
+            return;
+        }
 
-    const handleAddToCart = () => {
-        addItem({ id, name, price, image }, quantity);
-        setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 2000);
-    };
+        const { data: { user } } = await supabase.auth.getUser();
 
-    const handleBuyNow = () => {
-        handleAddToCart();
-        router.push("/cart");
-    };
+        if (!user) {
+            if (confirm("로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?")) {
+                router.push("/login");
+            }
+            return;
+        }
 
-    const handleToggleWishlist = () => {
-        toggleItem({ id, name, price, image });
+        const totalPrice = (price + (corsageCount * 15000)) * quantity;
+
+        const orderItem = {
+            id,
+            name,
+            price: price + (corsageCount * 15000),
+            image,
+            quantity,
+            options: {
+                color,
+                flowers,
+                corsageCount
+            }
+        };
+
+        const { error } = await supabase.from("orders").insert({
+            user_id: user.id,
+            customer_name: user.user_metadata?.name || user.email,
+            customer_phone: user.user_metadata?.phone || "",
+            status: "pending",
+            total_amount: totalPrice,
+            items: [orderItem],
+            wedding_date: weddingDate,
+            wedding_time: weddingTime,
+            venue: venue,
+            pickup_location: pickupLocation,
+            requests: requests
+        });
+
+        if (error) {
+            console.error("Error creating order:", error);
+            alert(`예약 접수 중 오류가 발생했습니다: ${error.message}`);
+            return;
+        }
+
+        alert("예약 접수가 완료되었습니다.");
+        router.push("/mypage");
     };
 
     return (
@@ -52,88 +98,80 @@ export function ProductInfo({ id, name, price, description, image, category, flo
                 <div>
                     <p className="text-xs text-orie-text/60 mb-2 uppercase tracking-wider">{category || "웨딩 부케"}</p>
                     <h1 className="text-3xl font-serif font-normal text-orie-text mb-2">{name}</h1>
-                    <p className="text-orie-text/60 text-sm">{flowers}</p>
                 </div>
-                <button
-                    onClick={handleToggleWishlist}
-                    className="p-2 hover:opacity-70 transition-opacity"
-                >
-                    <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill={inWishlist ? "currentColor" : "none"}
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        className={inWishlist ? "text-red-500" : "text-orie-text"}
-                    >
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                </button>
             </div>
 
-            <div className="text-xl font-medium text-orie-text mb-10">₩{price.toLocaleString()}</div>
+            {/* Price Hidden */}
 
-            <div className="border-t border-b border-orie-text/10 py-6 mb-10">
+            {/* Flower Details - Improved Design */}
+            <div className="flex flex-col gap-4 mb-10 border-t border-b border-orie-text/10 py-8">
+                <div className="grid grid-cols-[100px_1fr] gap-4 items-baseline">
+                    <span className="text-xs font-serif text-orie-text/60 uppercase tracking-widest">Color</span>
+                    <span className="text-sm text-orie-text font-light">{color || "White & Green"}</span>
+                </div>
+                <div className="grid grid-cols-[100px_1fr] gap-4 items-baseline">
+                    <span className="text-xs font-serif text-orie-text/60 uppercase tracking-widest">Flowers</span>
+                    <span className="text-sm text-orie-text font-light leading-relaxed">{flowers || "Rose, Lisianthus, Tulip, Eucalyptus"}</span>
+                </div>
+            </div>
+
+            <div className="mb-10">
                 <p className="text-sm text-orie-text/80 leading-relaxed">{description}</p>
             </div>
 
-            <BouquetOptions />
-
             <div className="flex flex-col gap-4">
-                {/* Quantity Selector */}
-                <div className="flex items-center justify-between border border-orie-text/20 p-4">
-                    <span className="text-sm">수량</span>
-                    <div className="flex items-center gap-4">
+                {/* Buttons */}
+                <button
+                    onClick={() => setShowReservationModal(true)}
+                    className="w-full py-4 border border-orie-text bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                >
+                    예약하기
+                </button>
+            </div>
+
+            {/* Reservation Modal */}
+            {showReservationModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white w-full max-w-md p-6 max-h-[90vh] overflow-y-auto relative shadow-xl">
                         <button
-                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                            className="w-6 h-6 flex items-center justify-center hover:opacity-50"
+                            onClick={() => setShowReservationModal(false)}
+                            className="absolute top-4 right-4 text-orie-text hover:opacity-50"
                         >
-                            -
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
                         </button>
-                        <span className="text-sm w-4 text-center">{quantity}</span>
+
+                        <h3 className="text-xl font-serif mb-6 text-orie-text">예약 정보 입력</h3>
+
+                        <BouquetOptions
+                            weddingDate={weddingDate}
+                            setWeddingDate={setWeddingDate}
+                            weddingTime={weddingTime}
+                            setWeddingTime={setWeddingTime}
+                            venue={venue}
+                            setVenue={setVenue}
+                            pickupLocation={pickupLocation}
+                            setPickupLocation={setPickupLocation}
+                            corsageCount={corsageCount}
+                            setCorsageCount={setCorsageCount}
+                            requests={requests}
+                            setRequests={setRequests}
+                            quantity={quantity}
+                            setQuantity={setQuantity}
+                        />
+
                         <button
-                            onClick={() => setQuantity(quantity + 1)}
-                            className="w-6 h-6 flex items-center justify-center hover:opacity-50"
+                            onClick={handleReserve}
+                            className="w-full py-4 mt-6 bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                         >
-                            +
+                            예약 하기
                         </button>
                     </div>
                 </div>
+            )}
 
-                {/* Buttons */}
-                <button
-                    onClick={handleAddToCart}
-                    className={`w-full py-4 text-sm font-semibold transition-colors ${isAdded
-                        ? "bg-green-600 text-white"
-                        : "bg-orie-text text-white hover:bg-[#5A6275]"
-                        }`}
-                >
-                    {isAdded ? "장바구니에 담겼습니다 ✓" : "장바구니 담기"}
-                </button>
-                <button
-                    onClick={handleBuyNow}
-                    className="w-full py-4 border border-orie-text text-orie-text text-sm font-semibold hover:bg-orie-text hover:text-white transition-colors"
-                >
-                    바로 구매
-                </button>
-            </div>
-
-            {/* Accordions (Placeholder) */}
-            <div className="mt-12 flex flex-col gap-4">
-                <div className="flex justify-between items-center py-2 border-b border-orie-text/10 cursor-pointer">
-                    <span className="text-sm font-medium">상세 정보</span>
-                    <span>+</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-orie-text/10 cursor-pointer">
-                    <span className="text-sm font-medium">사용된 꽃</span>
-                    <span>+</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-orie-text/10 cursor-pointer">
-                    <span className="text-sm font-medium">배송 및 교환</span>
-                    <span>+</span>
-                </div>
-            </div>
-        </div>
+        </div >
     );
 }

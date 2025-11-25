@@ -30,7 +30,7 @@ export default function NewProductPage() {
 
     const handleSubmit = async () => {
         if (!formData.name || !formData.price) {
-            alert("Please fill in required fields (Name, Price)");
+            alert("필수 항목(상품명, 가격)을 입력해주세요.");
             return;
         }
 
@@ -51,11 +51,11 @@ export default function NewProductPage() {
 
             if (error) throw error;
 
-            alert("Product created successfully!");
+            alert("상품이 성공적으로 등록되었습니다!");
             router.push("/products");
         } catch (error: any) {
             console.error("Error creating product:", error);
-            alert("Failed to create product: " + error.message);
+            alert("상품 등록에 실패했습니다: " + error.message);
         } finally {
             setLoading(false);
         }
@@ -67,7 +67,7 @@ export default function NewProductPage() {
                 <Link href="/products" className="text-gray-500 hover:text-gray-900">
                     <ArrowLeft size={24} />
                 </Link>
-                <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
+                <h1 className="text-2xl font-bold text-gray-900">상품 등록</h1>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -75,28 +75,28 @@ export default function NewProductPage() {
                 <div className="lg:col-span-2 space-y-6">
                     {/* Basic Info */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Basic Information</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">기본 정보</h2>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Product Name *</label>
+                            <label className="text-sm font-medium text-gray-700">상품명 *</label>
                             <input
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                placeholder="e.g. Classic Rose Bouquet"
+                                placeholder="예: 클래식 로즈 부케"
                                 className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Description</label>
+                            <label className="text-sm font-medium text-gray-700">설명</label>
                             <textarea
                                 rows={4}
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
-                                placeholder="Product description..."
+                                placeholder="상품 설명을 입력하세요..."
                                 className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                             />
                         </div>
@@ -104,11 +104,11 @@ export default function NewProductPage() {
 
                     {/* Pricing & Inventory */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Pricing & Inventory</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">가격 및 재고</h2>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Price (₩) *</label>
+                                <label className="text-sm font-medium text-gray-700">가격 (₩) *</label>
                                 <input
                                     type="number"
                                     name="price"
@@ -119,7 +119,7 @@ export default function NewProductPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Stock Quantity</label>
+                                <label className="text-sm font-medium text-gray-700">재고 수량</label>
                                 <input
                                     type="number"
                                     name="stock"
@@ -134,34 +134,29 @@ export default function NewProductPage() {
 
                     {/* Attributes */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Attributes</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">속성</h2>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Color</label>
-                                <select
+                                <label className="text-sm font-medium text-gray-700">색상</label>
+                                <input
+                                    type="text"
                                     name="color"
                                     value={formData.color}
                                     onChange={handleChange}
+                                    placeholder="예: White & Green"
                                     className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
-                                >
-                                    <option value="">Select Color</option>
-                                    <option value="White">White</option>
-                                    <option value="Pink">Pink</option>
-                                    <option value="Peach">Peach</option>
-                                    <option value="Green">Green</option>
-                                    <option value="Purple">Purple</option>
-                                </select>
+                                />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Style</label>
+                                <label className="text-sm font-medium text-gray-700">스타일</label>
                                 <select
                                     name="style"
                                     value={formData.style}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                                 >
-                                    <option value="">Select Style</option>
+                                    <option value="">스타일 선택</option>
                                     <option value="Round">Round</option>
                                     <option value="Drop">Drop</option>
                                     <option value="Natural">Natural</option>
@@ -169,13 +164,13 @@ export default function NewProductPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Flowers Used</label>
+                            <label className="text-sm font-medium text-gray-700">사용된 꽃</label>
                             <input
                                 type="text"
                                 name="flowers"
                                 value={formData.flowers}
                                 onChange={handleChange}
-                                placeholder="e.g. Rose, Tulip, Lily"
+                                placeholder="예: Rose, Tulip, Lily"
                                 className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                             />
                         </div>
@@ -186,34 +181,39 @@ export default function NewProductPage() {
                 <div className="space-y-6">
                     {/* Status */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Status</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">상태</h2>
                         <select
                             name="status"
                             value={formData.status}
                             onChange={handleChange}
                             className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                         >
-                            <option value="active">Active</option>
-                            <option value="draft">Draft</option>
-                            <option value="archived">Archived</option>
+                            <option value="active">판매중</option>
+                            <option value="draft">임시저장</option>
+                            <option value="archived">보관됨</option>
                         </select>
                     </div>
 
                     {/* Category */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Category</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">카테고리</h2>
                         <div className="space-y-2">
-                            {["Classic", "Natural", "Romantic", "Premium"].map((cat) => (
-                                <label key={cat} className="flex items-center gap-2">
+                            {[
+                                { id: "simple", label: "심플 (촬영용)" },
+                                { id: "premium", label: "프리미엄 (본식용)" },
+                                { id: "custom", label: "커스텀" },
+                                { id: "etc", label: "기타" }
+                            ].map((cat) => (
+                                <label key={cat.id} className="flex items-center gap-2">
                                     <input
                                         type="radio"
                                         name="category"
-                                        value={cat}
-                                        checked={formData.category === cat}
+                                        value={cat.id}
+                                        checked={formData.category === cat.id}
                                         onChange={handleChange}
                                         className="text-gray-900 focus:ring-gray-900"
                                     />
-                                    <span className="text-sm text-gray-700">{cat}</span>
+                                    <span className="text-sm text-gray-700">{cat.label}</span>
                                 </label>
                             ))}
                         </div>
@@ -221,19 +221,19 @@ export default function NewProductPage() {
 
                     {/* Images */}
                     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Product Image</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">상품 이미지</h2>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Image URL</label>
+                            <label className="text-sm font-medium text-gray-700">이미지 URL</label>
                             <input
                                 type="text"
                                 name="image"
                                 value={formData.image}
                                 onChange={handleChange}
-                                placeholder="e.g. /images/bouquet_01.png"
+                                placeholder="예: /images/bouquet_01.png"
                                 className="w-full px-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                             />
-                            <p className="text-xs text-gray-500">Enter a public URL or local path like /images/...</p>
+                            <p className="text-xs text-gray-500">공개 URL 또는 /images/... 와 같은 로컬 경로를 입력하세요.</p>
                         </div>
 
                         {formData.image && (
@@ -250,14 +250,14 @@ export default function NewProductPage() {
                     href="/products"
                     className="px-6 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                    Cancel
+                    취소
                 </Link>
                 <button
                     onClick={handleSubmit}
                     disabled={loading}
                     className="px-6 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
                 >
-                    {loading ? "Saving..." : "Save Product"}
+                    {loading ? "저장 중..." : "상품 저장"}
                 </button>
             </div>
         </div>

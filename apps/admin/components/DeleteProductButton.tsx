@@ -9,7 +9,7 @@ export function DeleteProductButton({ id }: { id: string }) {
     const supabase = createClient();
 
     const handleDelete = async () => {
-        if (!confirm("Are you sure you want to delete this product?")) return;
+        if (!confirm("정말로 이 상품을 삭제하시겠습니까?")) return;
 
         try {
             const { error } = await supabase
@@ -22,7 +22,7 @@ export function DeleteProductButton({ id }: { id: string }) {
             router.refresh();
         } catch (error) {
             console.error("Error deleting product:", error);
-            alert("Failed to delete product");
+            alert("상품 삭제에 실패했습니다.");
         }
     };
 

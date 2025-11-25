@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Search, Filter, Download } from "lucide-react";
-import { getAllOrders } from "../../lib/services/orders";
-
+import { Download } from "lucide-react";
+import { createClient } from "../../lib/supabase/server";
 import { OrderFilters } from "../../components/OrderFilters";
 
 export default async function OrdersPage({
@@ -9,33 +8,40 @@ export default async function OrdersPage({
 }: {
     searchParams: { [key: string]: string | string[] | undefined };
 }) {
+    const supabase = await createClient();
     const status = typeof searchParams.status === 'string' ? searchParams.status : undefined;
-    const search = typeof searchParams.search === 'string' ? searchParams.search : undefined;
 
-    const ordersData = await getAllOrders({ status, search });
+    let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
+
+    if (status) {
+        query = query.eq('status', status);
+    }
+
+    const { data: ordersData, error } = await query;
+
+    if (error) {
+        console.error("Error fetching orders:", error);
+        return <div className="p-8 text-center text-red-600">주문 목록을 불러오는 중 오류가 발생했습니다.</div>;
+    }
 
     // Transform data for display
     const orders = ordersData.map((order: any) => ({
-        id: order.id.slice(0, 8),
+        id: order.id.slice(0, 8).toUpperCase(),
         fullId: order.id,
-        customer: order.profiles?.name || order.guest_info?.name || "Guest",
+        customer: order.customer_name || "Guest",
         date: new Date(order.created_at).toLocaleDateString('ko-KR'),
         status: order.status,
         total: order.total_amount,
-        items: order.order_items?.length || 0,
+        items: order.items?.length || 0,
     }));
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'paid':
+            case 'confirmed':
                 return 'bg-green-100 text-green-800';
+            case 'payment_pending':
+                return 'bg-orange-100 text-orange-800';
             case 'pending':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'preparing':
-                return 'bg-blue-100 text-blue-800';
-            case 'shipped':
-                return 'bg-purple-100 text-purple-800';
-            case 'delivered':
                 return 'bg-gray-100 text-gray-800';
             case 'cancelled':
                 return 'bg-red-100 text-red-800';
@@ -46,11 +52,9 @@ export default async function OrdersPage({
 
     const getStatusText = (status: string) => {
         const statusMap: Record<string, string> = {
-            pending: '결제 대기',
-            paid: '결제 완료',
-            preparing: '준비 중',
-            shipped: '배송 중',
-            delivered: '배송 완료',
+            pending: '예약 대기중',
+            payment_pending: '예약금 대기 중',
+            confirmed: '예약 확정',
             cancelled: '취소됨',
         };
         return statusMap[status] || status;
@@ -66,7 +70,7 @@ export default async function OrdersPage({
                 </div>
                 <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                     <Download size={16} />
-                    Export
+                    내보내기
                 </button>
             </div>
 
@@ -85,7 +89,7 @@ export default async function OrdersPage({
                                 고객명
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                주문일
+                                접수일
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 상태
@@ -94,7 +98,7 @@ export default async function OrdersPage({
                                 금액
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                액션
+                                관리
                             </th>
                         </tr>
                     </thead>
@@ -126,7 +130,7 @@ export default async function OrdersPage({
                                         ₩{order.total.toLocaleString()}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-blue-600 hover:underline cursor-pointer">
-                                        <Link href={`/orders/${order.fullId}`}>View</Link>
+                                        <Link href={`/orders/${order.fullId}`}>상세보기</Link>
                                     </td>
                                 </tr>
                             ))

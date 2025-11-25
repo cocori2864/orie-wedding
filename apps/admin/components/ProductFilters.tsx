@@ -57,7 +57,7 @@ export function ProductFilters() {
                     type="text"
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    placeholder="Search products..."
+                    placeholder="상품 검색..."
                     className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                 />
             </div>
@@ -67,7 +67,7 @@ export function ProductFilters() {
                     onChange={handleCategoryChange}
                     className="px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                 >
-                    <option value="">All Categories</option>
+                    <option value="">전체 카테고리</option>
                     <option value="Classic">Classic</option>
                     <option value="Natural">Natural</option>
                     <option value="Romantic">Romantic</option>
@@ -78,10 +78,10 @@ export function ProductFilters() {
                     onChange={handleStatusChange}
                     className="px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
                 >
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                    <option value="archived">Archived</option>
+                    <option value="">전체 상태</option>
+                    <option value="active">판매중</option>
+                    <option value="out_of_stock">품절</option>
+                    <option value="archived">보관됨</option>
                 </select>
             </div>
         </div>

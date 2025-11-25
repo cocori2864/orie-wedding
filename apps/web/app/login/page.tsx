@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
@@ -12,6 +12,16 @@ export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
     const supabase = createClient();
+
+    const [rememberEmail, setRememberEmail] = useState(false);
+
+    useEffect(() => {
+        const savedEmail = localStorage.getItem("savedEmail");
+        if (savedEmail) {
+            setEmail(savedEmail);
+            setRememberEmail(true);
+        }
+    }, []);
 
     const handleSocialLogin = async (provider: 'google' | 'kakao') => {
         try {
@@ -39,6 +49,12 @@ export default function LoginPage() {
             });
 
             if (error) throw error;
+
+            if (rememberEmail) {
+                localStorage.setItem("savedEmail", email);
+            } else {
+                localStorage.removeItem("savedEmail");
+            }
 
             router.push("/");
             router.refresh();
@@ -92,6 +108,19 @@ export default function LoginPage() {
                             placeholder="••••••••"
                             required
                         />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="remember-email"
+                            checked={rememberEmail}
+                            onChange={(e) => setRememberEmail(e.target.checked)}
+                            className="w-4 h-4 accent-orie-text"
+                        />
+                        <label htmlFor="remember-email" className="text-sm text-orie-text/80 cursor-pointer">
+                            아이디 저장
+                        </label>
                     </div>
 
                     <button

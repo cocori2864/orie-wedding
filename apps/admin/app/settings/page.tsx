@@ -7,10 +7,11 @@ export default function SettingsPage() {
     const [selectedTab, setSelectedTab] = useState("general");
 
     return (
+    return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-                <p className="text-gray-500 mt-1">Manage your store settings and preferences</p>
+                <h1 className="text-2xl font-bold text-gray-900">설정</h1>
+                <p className="text-gray-500 mt-1">스토어 설정 및 환경설정을 관리하세요.</p>
             </div>
 
             <div className="flex gap-8">
@@ -18,18 +19,18 @@ export default function SettingsPage() {
                 <div className="w-64 flex-shrink-0">
                     <nav className="space-y-1">
                         {[
-                            { id: 'general', icon: Building, label: 'General' },
-                            { id: 'store', icon: Globe, label: 'Store Details' },
-                            { id: 'payments', icon: CreditCard, label: 'Payments' },
-                            { id: 'notifications', icon: Bell, label: 'Notifications' },
-                            { id: 'security', icon: Shield, label: 'Security' },
+                            { id: 'general', icon: Building, label: '일반' },
+                            { id: 'store', icon: Globe, label: '스토어 정보' },
+                            { id: 'payments', icon: CreditCard, label: '결제' },
+                            { id: 'notifications', icon: Bell, label: '알림' },
+                            { id: 'security', icon: Shield, label: '보안' },
                         ].map((item) => (
                             <button
                                 key={item.id}
                                 onClick={() => setSelectedTab(item.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors ${selectedTab === item.id
-                                        ? 'bg-gray-900 text-white'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    ? 'bg-gray-900 text-white'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                             >
                                 <item.icon size={18} />
@@ -44,11 +45,11 @@ export default function SettingsPage() {
                     {selectedTab === 'general' && (
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                             <div className="p-6 border-b border-gray-200">
-                                <h2 className="text-lg font-bold text-gray-900">General Settings</h2>
+                                <h2 className="text-lg font-bold text-gray-900">일반 설정</h2>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Store Name</label>
+                                    <label className="text-sm font-medium text-gray-700">스토어 이름</label>
                                     <input
                                         type="text"
                                         defaultValue="ORIÉ Wedding Bouquet"
@@ -56,7 +57,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Store Description</label>
+                                    <label className="text-sm font-medium text-gray-700">스토어 설명</label>
                                     <textarea
                                         rows={4}
                                         defaultValue="Premium wedding bouquet e-commerce store"
@@ -64,7 +65,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Contact Email</label>
+                                    <label className="text-sm font-medium text-gray-700">연락처 이메일</label>
                                     <input
                                         type="email"
                                         defaultValue="contact@orie.com"
@@ -72,7 +73,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                                    <label className="text-sm font-medium text-gray-700">전화번호</label>
                                     <input
                                         type="tel"
                                         defaultValue="+82 10-1234-5678"
@@ -83,7 +84,7 @@ export default function SettingsPage() {
                             <div className="p-6 border-t border-gray-200 flex justify-end">
                                 <button className="px-6 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
                                     <Save size={16} />
-                                    Save Changes
+                                    변경사항 저장
                                 </button>
                             </div>
                         </div>
@@ -92,11 +93,11 @@ export default function SettingsPage() {
                     {selectedTab === 'store' && (
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                             <div className="p-6 border-b border-gray-200">
-                                <h2 className="text-lg font-bold text-gray-900">Store Details</h2>
+                                <h2 className="text-lg font-bold text-gray-900">스토어 정보</h2>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Business Address</label>
+                                    <label className="text-sm font-medium text-gray-700">사업장 주소</label>
                                     <input
                                         type="text"
                                         placeholder="123 Wedding Street, Seoul"
@@ -105,7 +106,7 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">City</label>
+                                        <label className="text-sm font-medium text-gray-700">도시</label>
                                         <input
                                             type="text"
                                             placeholder="Seoul"
@@ -113,7 +114,7 @@ export default function SettingsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Postal Code</label>
+                                        <label className="text-sm font-medium text-gray-700">우편번호</label>
                                         <input
                                             type="text"
                                             placeholder="12345"
@@ -122,7 +123,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Business Hours</label>
+                                    <label className="text-sm font-medium text-gray-700">영업 시간</label>
                                     <input
                                         type="text"
                                         defaultValue="Mon-Fri: 9:00 AM - 6:00 PM"
@@ -133,7 +134,7 @@ export default function SettingsPage() {
                             <div className="p-6 border-t border-gray-200 flex justify-end">
                                 <button className="px-6 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
                                     <Save size={16} />
-                                    Save Changes
+                                    변경사항 저장
                                 </button>
                             </div>
                         </div>
@@ -142,10 +143,10 @@ export default function SettingsPage() {
                     {selectedTab === 'payments' && (
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                             <div className="p-6 border-b border-gray-200">
-                                <h2 className="text-lg font-bold text-gray-900">Payment Methods</h2>
+                                <h2 className="text-lg font-bold text-gray-900">결제 수단</h2>
                             </div>
                             <div className="p-6 space-y-4">
-                                {['Card Payment', 'Bank Transfer', 'KakaoPay', 'Naver Pay'].map((method, i) => (
+                                {['카드 결제', '무통장 입금', '카카오페이', '네이버페이'].map((method, i) => (
                                     <div key={i} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                                         <div className="flex items-center gap-3">
                                             <CreditCard size={20} className="text-gray-400" />
@@ -164,14 +165,14 @@ export default function SettingsPage() {
                     {selectedTab === 'notifications' && (
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                             <div className="p-6 border-b border-gray-200">
-                                <h2 className="text-lg font-bold text-gray-900">Notification Preferences</h2>
+                                <h2 className="text-lg font-bold text-gray-900">알림 설정</h2>
                             </div>
                             <div className="p-6 space-y-4">
                                 {[
-                                    { label: 'New Order Notifications', desc: 'Get notified when new orders are placed' },
-                                    { label: 'Low Stock Alerts', desc: 'Receive alerts when products are low in stock' },
-                                    { label: 'Customer Messages', desc: 'Get notified of new customer inquiries' },
-                                    { label: 'Marketing Updates', desc: 'Receive updates about marketing performance' },
+                                    { label: '새 주문 알림', desc: '새로운 주문이 접수되면 알림을 받습니다.' },
+                                    { label: '재고 부족 알림', desc: '상품 재고가 부족할 때 알림을 받습니다.' },
+                                    { label: '고객 문의 알림', desc: '새로운 고객 문의가 오면 알림을 받습니다.' },
+                                    { label: '마케팅 업데이트', desc: '마케팅 성과에 대한 업데이트를 받습니다.' },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-start justify-between p-4 border border-gray-200 rounded-lg">
                                         <div>
@@ -191,11 +192,11 @@ export default function SettingsPage() {
                     {selectedTab === 'security' && (
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                             <div className="p-6 border-b border-gray-200">
-                                <h2 className="text-lg font-bold text-gray-900">Security Settings</h2>
+                                <h2 className="text-lg font-bold text-gray-900">보안 설정</h2>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Current Password</label>
+                                    <label className="text-sm font-medium text-gray-700">현재 비밀번호</label>
                                     <input
                                         type="password"
                                         placeholder="••••••••"
@@ -203,7 +204,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">New Password</label>
+                                    <label className="text-sm font-medium text-gray-700">새 비밀번호</label>
                                     <input
                                         type="password"
                                         placeholder="••••••••"
@@ -211,7 +212,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
+                                    <label className="text-sm font-medium text-gray-700">새 비밀번호 확인</label>
                                     <input
                                         type="password"
                                         placeholder="••••••••"
@@ -221,14 +222,14 @@ export default function SettingsPage() {
                                 <div className="pt-4 border-t border-gray-200">
                                     <label className="flex items-center gap-3">
                                         <input type="checkbox" className="rounded" />
-                                        <span className="text-sm text-gray-700">Enable two-factor authentication</span>
+                                        <span className="text-sm text-gray-700">2단계 인증 활성화</span>
                                     </label>
                                 </div>
                             </div>
                             <div className="p-6 border-t border-gray-200 flex justify-end">
                                 <button className="px-6 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
                                     <Save size={16} />
-                                    Update Password
+                                    비밀번호 변경
                                 </button>
                             </div>
                         </div>

@@ -12,13 +12,13 @@ import {
     LogOut
 } from "lucide-react";
 
-const MENU_ITEMS = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Orders", href: "/orders", icon: ShoppingBag },
-    { name: "Products", href: "/products", icon: Package },
-    { name: "Customers", href: "/customers", icon: Users },
-    { name: "Marketing", href: "/marketing", icon: Megaphone },
-    { name: "Settings", href: "/settings", icon: Settings },
+const menuItems = [
+    { icon: LayoutDashboard, label: "대시보드", href: "/" },
+    { icon: ShoppingBag, label: "주문 관리", href: "/orders" },
+    { icon: Package, label: "상품 관리", href: "/products" },
+    { icon: Users, label: "고객 관리", href: "/customers" },
+    { icon: Megaphone, label: "마케팅", href: "/marketing" },
+    { icon: Settings, label: "설정", href: "/settings" },
 ];
 
 export function Sidebar() {
@@ -33,19 +33,19 @@ export function Sidebar() {
             </div>
 
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                {MENU_ITEMS.map((item) => {
+                {menuItems.map((item) => {
                     const isActive = pathname === item.href;
                     return (
                         <Link
-                            key={item.name}
+                            key={item.label}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors ${isActive
-                                    ? "bg-gray-900 text-white"
-                                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                ? "bg-gray-900 text-white"
+                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                 }`}
                         >
                             <item.icon size={20} />
-                            {item.name}
+                            {item.label}
                         </Link>
                     );
                 })}
@@ -54,9 +54,9 @@ export function Sidebar() {
             <div className="p-4 border-t border-gray-200">
                 <button className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 rounded-md hover:bg-red-50 w-full transition-colors">
                     <LogOut size={20} />
-                    Sign Out
+                    로그아웃
                 </button>
             </div>
-        </aside>
+        </aside >
     );
 }

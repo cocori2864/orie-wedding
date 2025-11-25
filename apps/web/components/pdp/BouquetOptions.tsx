@@ -5,16 +5,60 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { addDays } from "date-fns";
 
-export function BouquetOptions() {
-    const [weddingDate, setWeddingDate] = useState<Date | null>(null);
-    const [weddingTime, setWeddingTime] = useState("");
-    const [venue, setVenue] = useState("");
-    const [addBoutonniere, setAddBoutonniere] = useState(false);
-    const [addCorsage, setAddCorsage] = useState(false);
+interface BouquetOptionsProps {
+    weddingDate: Date | null;
+    setWeddingDate: (date: Date | null) => void;
+    weddingTime: string;
+    setWeddingTime: (time: string) => void;
+    venue: string;
+    setVenue: (venue: string) => void;
+    pickupLocation: string;
+    setPickupLocation: (location: string) => void;
+    corsageCount: number;
+    setCorsageCount: (count: number) => void;
+    requests: string;
+    setRequests: (requests: string) => void;
+    quantity: number;
+    setQuantity: (quantity: number) => void;
+}
 
+export function BouquetOptions({
+    weddingDate,
+    setWeddingDate,
+    weddingTime,
+    setWeddingTime,
+    venue,
+    setVenue,
+    pickupLocation,
+    setPickupLocation,
+    corsageCount,
+    setCorsageCount,
+    requests,
+    setRequests,
+    quantity,
+    setQuantity
+}: BouquetOptionsProps) {
     return (
-        <div className="flex flex-col gap-6 border-t border-b border-orie-text/10 py-8 my-8">
-            <h3 className="text-lg font-medium text-orie-text">예식 정보 입력 (필수)</h3>
+        <div className="flex flex-col gap-6">
+            {/* Quantity Selector */}
+            <div className="flex flex-col gap-2">
+                <label className="text-sm text-orie-text/80">수량</label>
+                <div className="flex items-center gap-6 border border-orie-text/20 p-3 w-full bg-white">
+                    <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                    >
+                        -
+                    </button>
+                    <span className="text-sm font-medium w-8 text-center">{quantity}</span>
+                    <button
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                    >
+                        +
+                    </button>
+                </div>
+            </div>
 
             {/* Wedding Date */}
             <div className="flex flex-col gap-2">
@@ -65,29 +109,57 @@ export function BouquetOptions() {
                 />
             </div>
 
-            {/* Additional Options */}
-            <div className="flex flex-col gap-3 mt-4">
-                <label className="text-sm text-orie-text/80 font-medium">추가 구성품</label>
+            {/* Pickup Location */}
+            <div className="flex flex-col gap-2">
+                <label className="text-sm text-orie-text/80">수령 장소 (메이크업 샵 등)</label>
+                <input
+                    type="text"
+                    value={pickupLocation}
+                    onChange={(e) => setPickupLocation(e.target.value)}
+                    placeholder="OO샵, 서울시 강남구 도산대로 등"
+                    className="w-full p-3 border border-orie-text/20 text-sm focus:outline-none focus:border-orie-text"
+                />
+            </div>
 
-                <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={addBoutonniere}
-                        onChange={(e) => setAddBoutonniere(e.target.checked)}
-                        className="w-4 h-4 accent-orie-text"
-                    />
-                    <span className="text-sm text-orie-text">신랑 부토니에 추가 (+15,000원)</span>
-                </label>
+            {/* Additional Options (Moved to Modal) */}
+            <div className="flex flex-col gap-4 mt-4 pt-4 border-t border-orie-text/10">
+                <label className="text-sm text-orie-text/80 font-medium">구성품 옵션</label>
 
-                <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={addCorsage}
-                        onChange={(e) => setAddCorsage(e.target.checked)}
-                        className="w-4 h-4 accent-orie-text"
-                    />
-                    <span className="text-sm text-orie-text">혼주 코사지 (4개) 추가 (+60,000원)</span>
-                </label>
+                {/* Boutonniere (Default) */}
+                <div className="flex justify-between items-center p-3 bg-gray-50 border border-orie-text/10">
+                    <span className="text-sm text-orie-text">신랑 부토니에</span>
+                    <span className="text-sm text-orie-text/60">기본 포함 (Basic)</span>
+                </div>
+
+                {/* Corsage Selection */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm text-orie-text">혼주 코사지 추가</span>
+                        <span className="text-xs text-orie-text/60">(개당 +15,000원)</span>
+                    </div>
+                    <select
+                        value={corsageCount}
+                        onChange={(e) => setCorsageCount(Number(e.target.value))}
+                        className="w-full p-3 border border-orie-text/20 text-sm focus:outline-none focus:border-orie-text bg-white"
+                    >
+                        {[0, 1, 2, 3, 4, 5, 6].map(num => (
+                            <option key={num} value={num}>
+                                {num === 0 ? "선택 안함" : `${num}개 (+${(num * 15000).toLocaleString()}원)`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Other Requests */}
+            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-orie-text/10">
+                <label className="text-sm text-orie-text/80 font-medium">기타 요청사항</label>
+                <textarea
+                    value={requests}
+                    onChange={(e) => setRequests(e.target.value)}
+                    placeholder="특별히 요청하실 사항이 있다면 적어주세요."
+                    className="w-full p-3 border border-orie-text/20 text-sm focus:outline-none focus:border-orie-text min-h-[100px] resize-none"
+                />
             </div>
         </div>
     );
