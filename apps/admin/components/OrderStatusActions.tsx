@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "../lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { updateOrderStatusToProductionCompleted } from "../app/actions/updateOrderStatus";
+import { updateOrderStatus, updateOrderStatusToProductionCompleted, confirmFinalPaymentAction } from "../app/actions/updateOrderStatus";
 
 interface OrderStatusActionsProps {
     orderId: string;
@@ -27,14 +27,11 @@ export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus,
         if (!confirm("상태를 변경하시겠습니까?")) return;
         setLoading(true);
 
-        const { error } = await supabase
-            .from('orders')
-            .update({ status: newStatus })
-            .eq('id', orderId);
+        const result = await updateOrderStatus(orderId, newStatus);
 
-        if (error) {
-            console.error(error);
-            alert("오류가 발생했습니다.");
+        if (!result.success) {
+            console.error(result.error);
+            alert("오류가 발생했습니다: " + result.error);
         } else {
             alert(message);
             router.refresh();
@@ -46,16 +43,10 @@ export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus,
         if (!confirm("잔금 입금을 확인하시겠습니까?")) return;
         setLoading(true);
 
-        const { error } = await supabase
-            .from('orders')
-            .update({
-                status: 'completed',
-                final_payment_status: 'paid'
-            })
-            .eq('id', orderId);
+        const result = await confirmFinalPaymentAction(orderId);
 
-        if (error) {
-            console.error(error);
+        if (!result.success) {
+            console.error(result.error);
             alert("오류가 발생했습니다.");
         } else {
             alert("잔금 입금이 확인되었습니다.");

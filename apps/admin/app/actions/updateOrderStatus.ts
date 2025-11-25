@@ -35,3 +35,37 @@ export async function updateOrderStatusToProductionCompleted(orderId: string, re
 
     return { success: true };
 }
+
+export async function updateOrderStatus(orderId: string, newStatus: string) {
+    const supabase = createAdminClient();
+
+    const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+    if (error) {
+        console.error("Status Update Error:", error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
+}
+
+export async function confirmFinalPaymentAction(orderId: string) {
+    const supabase = createAdminClient();
+
+    const { error } = await supabase
+        .from('orders')
+        .update({
+            status: 'completed',
+            final_payment_status: 'paid'
+        })
+        .eq('id', orderId);
+
+    if (error) {
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
+}
