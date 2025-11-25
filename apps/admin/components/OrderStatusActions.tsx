@@ -53,6 +53,24 @@ export function OrderStatusActions({ orderId, currentStatus }: OrderStatusAction
                     입금 확인 (예약 확정)
                 </button>
             )}
+            {currentStatus === 'confirmed' && (
+                <button
+                    onClick={() => updateStatus('production_completed', '제작 완료 처리되었습니다. 잔금 결제 요청이 발송됩니다.')}
+                    disabled={loading}
+                    className="w-full py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                >
+                    제작 완료 (잔금 요청)
+                </button>
+            )}
+            {currentStatus === 'production_completed' && (
+                <button
+                    onClick={() => updateStatus('completed', '주문이 완료되었습니다.')}
+                    disabled={loading}
+                    className="w-full py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 disabled:opacity-50"
+                >
+                    주문 완료 처리
+                </button>
+            )}
             {currentStatus !== 'cancelled' && (
                 <button
                     onClick={() => updateStatus('cancelled', '주문이 취소되었습니다.')}

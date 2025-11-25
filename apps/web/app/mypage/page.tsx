@@ -68,6 +68,8 @@ export default function MyPage() {
             pending: '예약 대기중',
             payment_pending: '예약금 대기 중',
             confirmed: '예약 확정',
+            production_completed: '제작 완료 (잔금 대기)',
+            completed: '주문 완료',
             cancelled: '취소됨',
         };
         return statusMap[status] || status;
@@ -79,6 +81,10 @@ export default function MyPage() {
                 return 'bg-green-100 text-green-700';
             case 'payment_pending':
                 return 'bg-orange-100 text-orange-700';
+            case 'production_completed':
+                return 'bg-blue-100 text-blue-700';
+            case 'completed':
+                return 'bg-gray-800 text-white';
             case 'pending':
                 return 'bg-gray-100 text-gray-700';
             case 'cancelled':
@@ -243,8 +249,20 @@ export default function MyPage() {
                                             </div>
                                         )}
 
+                                        {/* 잔금 결제 버튼 */}
+                                        {order.statusType === 'production_completed' && (
+                                            <div className="mt-4 flex justify-end">
+                                                <Link
+                                                    href={`/payment/${order.id}`}
+                                                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+                                                >
+                                                    잔금 결제하기
+                                                </Link>
+                                            </div>
+                                        )}
+
                                         {/* 취소 버튼 */}
-                                        {order.statusType !== 'cancelled' && order.statusType !== 'confirmed' && (
+                                        {order.statusType !== 'cancelled' && order.statusType !== 'confirmed' && order.statusType !== 'production_completed' && order.statusType !== 'completed' && (
                                             <div className="mt-4 flex justify-end">
                                                 <button
                                                     onClick={() => handleCancelClick(order)}
