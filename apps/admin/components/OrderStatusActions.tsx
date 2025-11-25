@@ -7,9 +7,10 @@ import { useRouter } from "next/navigation";
 interface OrderStatusActionsProps {
     orderId: string;
     currentStatus: string;
+    finalPaymentStatus?: string;
 }
 
-export function OrderStatusActions({ orderId, currentStatus }: OrderStatusActionsProps) {
+export function OrderStatusActions({ orderId, currentStatus, finalPaymentStatus }: OrderStatusActionsProps) {
     const supabase = createClient();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -28,6 +29,28 @@ export function OrderStatusActions({ orderId, currentStatus }: OrderStatusAction
             alert("오류가 발생했습니다.");
         } else {
             alert(message);
+            router.refresh();
+        }
+        setLoading(false);
+    };
+
+    const confirmFinalPayment = async () => {
+        if (!confirm("잔금 입금을 확인하시겠습니까?")) return;
+        setLoading(true);
+
+        const { error } = await supabase
+            .from('orders')
+            .update({
+                status: 'completed',
+                final_payment_status: 'paid'
+            })
+            .eq('id', orderId);
+
+        if (error) {
+            console.error(error);
+            alert("오류가 발생했습니다.");
+        } else {
+            alert("잔금 입금이 확인되었습니다.");
             router.refresh();
         }
         setLoading(false);
@@ -62,7 +85,19 @@ export function OrderStatusActions({ orderId, currentStatus }: OrderStatusAction
                     제작 완료 (잔금 요청)
                 </button>
             )}
-            {currentStatus === 'production_completed' && (
+
+            {/* 잔금 입금 확인 대기 중일 때 */}
+            {finalPaymentStatus === 'verification_pending' && (
+                <button
+                    onClick={confirmFinalPayment}
+                    disabled={loading}
+                    className="w-full py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                >
+                    잔금 입금 확인 (완료 처리)
+                </button>
+            )}
+
+            {currentStatus === 'production_completed' && finalPaymentStatus !== 'verification_pending' && (
                 <button
                     onClick={() => updateStatus('completed', '주문이 완료되었습니다.')}
                     disabled={loading}
@@ -71,6 +106,7 @@ export function OrderStatusActions({ orderId, currentStatus }: OrderStatusAction
                     주문 완료 처리
                 </button>
             )}
+
             {currentStatus !== 'cancelled' && (
                 <button
                     onClick={() => updateStatus('cancelled', '주문이 취소되었습니다.')}

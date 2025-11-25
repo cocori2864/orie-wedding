@@ -187,7 +187,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
                     {/* Admin Actions */}
                     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                         <h2 className="text-lg font-bold text-gray-900 mb-4">관리</h2>
-                        <OrderStatusActions orderId={order.id} currentStatus={order.status} />
+                        <OrderStatusActions
+                            orderId={order.id}
+                            currentStatus={order.status}
+                            finalPaymentStatus={order.final_payment_status}
+                        />
                     </div>
                 </div>
             </div>
