@@ -88,7 +88,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
                                     <div className="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden">
                                         {item.image && (
                                             <img
-                                                src={item.image}
+                                                src={item.image.startsWith('http') ? item.image : `${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000'}${item.image}`}
                                                 alt={item.name}
                                                 className="w-full h-full object-cover"
                                             />
