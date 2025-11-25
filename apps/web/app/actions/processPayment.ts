@@ -1,9 +1,9 @@
 'use server'
 
-import { createClient } from "../../lib/supabase/server";
+import { createAdminClient } from "../../lib/supabase/admin";
 
 export async function processPayment(orderId: string, paymentId: string, amount: number, method: string) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // 주문 상태 업데이트
     const { error } = await supabase
