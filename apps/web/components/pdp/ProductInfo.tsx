@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
 import { BouquetOptions } from "./BouquetOptions";
+import { createOrder } from "../../app/actions/createOrder";
 
 interface ProductInfoProps {
     id: string;
@@ -68,7 +69,7 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             }
         };
 
-        const { error } = await supabase.from("orders").insert({
+        const orderData = {
             user_id: user.id,
             customer_name: user.user_metadata?.name || user.email,
             customer_phone: user.user_metadata?.phone || "",
@@ -80,11 +81,17 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             venue: venue,
             pickup_location: pickupLocation,
             requests: requests
-        });
+        };
 
-        if (error) {
-            console.error("Error creating order:", error);
-            alert(`예약 접수 중 오류가 발생했습니다: ${error.message}`);
+        const result = await createOrder(
+            orderData,
+            user.user_metadata?.phone || "",
+            user.user_metadata?.name || user.email
+        );
+
+        if (!result.success) {
+            console.error("Error creating order:", result.error);
+            alert(`예약 접수 중 오류가 발생했습니다: ${result.error}`);
             return;
         }
 
