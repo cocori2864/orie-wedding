@@ -59,15 +59,16 @@ export default async function OrderDetailPage({ params }: PageProps) {
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">주문 #{order.id.slice(0, 8).toUpperCase()}</h1>
                         <p className="text-sm text-gray-500">
-                            {new Date(order.created_at).toLocaleString('ko-KR', {
-                                timeZone: 'Asia/Seoul',
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                            })}
+                            {(() => {
+                                const dateObj = new Date(order.created_at);
+                                const kstDate = new Date(dateObj.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+                                const year = kstDate.getFullYear();
+                                const month = String(kstDate.getMonth() + 1).padStart(2, '0');
+                                const day = String(kstDate.getDate()).padStart(2, '0');
+                                const hours = String(kstDate.getHours()).padStart(2, '0');
+                                const minutes = String(kstDate.getMinutes()).padStart(2, '0');
+                                return `${year}-${month}-${day} ${hours}:${minutes}`;
+                            })()}
                         </p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
@@ -157,12 +158,12 @@ export default async function OrderDetailPage({ params }: PageProps) {
                     </div>
 
                     {/* Requests */}
-                    {order.requests && (
-                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-4">요청 사항</h2>
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.requests}</p>
-                        </div>
-                    )}
+                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">요청 사항</h2>
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                            {order.requests ? order.requests : "요청 사항이 없습니다."}
+                        </p>
+                    </div>
                 </div>
 
                 {/* Right Column: Customer & Actions */}

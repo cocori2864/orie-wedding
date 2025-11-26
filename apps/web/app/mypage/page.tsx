@@ -40,25 +40,28 @@ export default function MyPage() {
                 if (fetchError) throw fetchError;
 
                 // Transform data for UI
-                const formattedOrders = userOrders.map((order: any) => ({
-                    id: order.id,
-                    displayId: order.id.slice(0, 8).toUpperCase(),
-                    date: new Date(order.created_at).toLocaleString('ko-KR', {
-                        timeZone: 'Asia/Seoul',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    }),
-                    status: getStatusText(order.status),
-                    statusType: order.status,
-                    items: order.items, // JSONB array
-                    total: order.total_amount,
-                    weddingDate: order.wedding_date,
-                    pickupLocation: order.pickup_location
-                }));
+                const formattedOrders = userOrders.map((order: any) => {
+                    const dateObj = new Date(order.created_at);
+                    const kstDate = new Date(dateObj.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+                    const year = kstDate.getFullYear();
+                    const month = String(kstDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(kstDate.getDate()).padStart(2, '0');
+                    const hours = String(kstDate.getHours()).padStart(2, '0');
+                    const minutes = String(kstDate.getMinutes()).padStart(2, '0');
+                    const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+                    return {
+                        id: order.id,
+                        displayId: order.id.slice(0, 8).toUpperCase(),
+                        date: formattedDate,
+                        status: getStatusText(order.status),
+                        statusType: order.status,
+                        items: order.items, // JSONB array
+                        total: order.total_amount,
+                        weddingDate: order.wedding_date,
+                        pickupLocation: order.pickup_location
+                    };
+                });
 
                 setOrders(formattedOrders);
             } catch (error) {
