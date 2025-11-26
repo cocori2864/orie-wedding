@@ -59,7 +59,8 @@ export default function MyPage() {
                         items: order.items, // JSONB array
                         total: order.total_amount,
                         weddingDate: order.wedding_date,
-                        pickupLocation: order.pickup_location
+                        pickupLocation: order.pickup_location,
+                        requests: order.requests
                     };
                 });
 
@@ -241,6 +242,13 @@ export default function MyPage() {
                                             <div className="mt-4 bg-gray-50 p-3 text-xs text-orie-text/80">
                                                 <p>예식일(수령일): {new Date(order.weddingDate).toLocaleDateString()}</p>
                                                 <p>수령 장소: {order.pickupLocation}</p>
+                                            </div>
+                                        )}
+
+                                        {order.requests && (
+                                            <div className="mt-2 bg-gray-50 p-3 text-xs text-orie-text/80 border-t border-gray-200 border-dashed">
+                                                <p className="font-semibold mb-1">요청 사항:</p>
+                                                <p className="whitespace-pre-wrap">{order.requests}</p>
                                             </div>
                                         )}
 
