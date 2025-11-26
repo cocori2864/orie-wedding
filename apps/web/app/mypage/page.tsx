@@ -43,7 +43,15 @@ export default function MyPage() {
                 const formattedOrders = userOrders.map((order: any) => ({
                     id: order.id,
                     displayId: order.id.slice(0, 8).toUpperCase(),
-                    date: new Date(order.created_at).toLocaleDateString('ko-KR'),
+                    date: new Date(order.created_at).toLocaleString('ko-KR', {
+                        timeZone: 'Asia/Seoul',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    }),
                     status: getStatusText(order.status),
                     statusType: order.status,
                     items: order.items, // JSONB array

@@ -59,7 +59,15 @@ export default async function OrderDetailPage({ params }: PageProps) {
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">주문 #{order.id.slice(0, 8).toUpperCase()}</h1>
                         <p className="text-sm text-gray-500">
-                            {new Date(order.created_at).toLocaleString('ko-KR')}
+                            {new Date(order.created_at).toLocaleString('ko-KR', {
+                                timeZone: 'Asia/Seoul',
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                            })}
                         </p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>

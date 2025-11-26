@@ -32,7 +32,15 @@ export default async function OrdersPage({
         id: order.id.slice(0, 8).toUpperCase(),
         fullId: order.id,
         customer: order.customer_name || "Guest",
-        date: new Date(order.created_at).toLocaleString('ko-KR'),
+        date: new Date(order.created_at).toLocaleString('ko-KR', {
+            timeZone: 'Asia/Seoul',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }),
         status: order.status,
         total: order.total_amount,
         items: order.items?.length || 0,
