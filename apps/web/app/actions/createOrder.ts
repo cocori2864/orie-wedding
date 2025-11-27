@@ -33,7 +33,8 @@ export async function createOrder(orderData: any, customerPhone: string, custome
 
                 if (countError) throw countError;
 
-                if (count !== null && count >= capacity.max_slots) {
+                // max_slots가 null이면 무제한이므로 체크하지 않음
+                if (capacity.max_slots !== null && count !== null && count >= capacity.max_slots) {
                     throw new Error("해당 날짜의 예약이 마감되었습니다.");
                 }
             }
