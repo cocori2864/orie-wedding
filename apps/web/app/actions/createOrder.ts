@@ -40,7 +40,10 @@ export async function createOrder(orderData: any, customerPhone: string, custome
 
                 // max_slots가 null이면 무제한이므로 체크하지 않음
                 // 또한 max_slots가 0인 경우도 무제한으로 처리 (사용자 요청)
-                if (capacity.max_slots !== null && capacity.max_slots !== 0 && count !== null && count >= capacity.max_slots) {
+                // DB에서 문자열로 올 수 있으므로 Number()로 변환
+                const maxSlots = Number(capacity.max_slots);
+
+                if (capacity.max_slots !== null && maxSlots !== 0 && count !== null && count >= maxSlots) {
                     console.log('[createOrder] Blocked: count >= max_slots');
                     throw new Error("해당 날짜의 예약이 마감되었습니다.");
                 }

@@ -58,6 +58,7 @@ export function GuestOrderForm({ onSubmit, onCancel }: GuestOrderFormProps) {
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full border border-gray-300 p-2 text-sm focus:outline-none focus:border-orie-text"
                         placeholder="비밀번호"
+                        autoComplete="new-password"
                     />
                 </div>
                 <div>
@@ -68,6 +69,7 @@ export function GuestOrderForm({ onSubmit, onCancel }: GuestOrderFormProps) {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full border border-gray-300 p-2 text-sm focus:outline-none focus:border-orie-text"
                         placeholder="비밀번호 확인"
+                        autoComplete="new-password"
                     />
                 </div>
                 <div className="flex gap-2 mt-4">

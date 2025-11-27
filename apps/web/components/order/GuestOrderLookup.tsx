@@ -75,6 +75,7 @@ export function GuestOrderLookup() {
                         className="w-full p-3 bg-white border border-orie-text/20 text-sm focus:outline-none focus:border-orie-text"
                         placeholder="주문 비밀번호"
                         required
+                        autoComplete="current-password"
                     />
                 </div>
 
