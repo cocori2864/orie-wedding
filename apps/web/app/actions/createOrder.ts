@@ -1,10 +1,12 @@
 'use server'
 
 import { createClient } from "../../lib/supabase/server";
+import { createAdminClient } from "../../lib/supabase/admin";
 import { sendBankInfoAlimtalk } from "../../lib/alimtalk";
 
 export async function createOrder(orderData: any, customerPhone: string, customerName: string, guestPassword?: string) {
-    const supabase = await createClient();
+    // Use admin client for DB operations to bypass RLS (especially for guest orders)
+    const supabase = createAdminClient();
 
     try {
         // 0. Check Capacity
