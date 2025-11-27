@@ -28,15 +28,24 @@ export async function createOrder(orderData: any, customerPhone: string, custome
                 // }
 
                 // Check current order count
+                // Use range query to handle both DATE and TIMESTAMP types safely
+                const nextDate = new Date(weddingDate);
+                nextDate.setDate(nextDate.getDate() + 1);
+                const nextDateString = nextDate.toISOString().split('T')[0];
+
                 const { count, error: countError } = await supabase
                     .from('orders')
                     .select('*', { count: 'exact', head: true })
-                    .eq('wedding_date', weddingDate)
+                    .gte('wedding_date', weddingDate)
+                    .lt('wedding_date', nextDateString)
                     .neq('status', 'cancelled');
 
-                if (countError) throw countError;
+                if (countError) {
+                    console.error("[createOrder] Count Error:", countError);
+                    throw countError;
+                }
 
-                console.log(`[createOrder] Count: ${count}, Max Slots: ${capacity.max_slots}`);
+                console.log(`[createOrder] Date: ${weddingDate}, Count: ${count}, Max Slots: ${capacity.max_slots} (Parsed: ${Number(capacity.max_slots)})`);
 
                 // max_slots가 null이면 무제한이므로 체크하지 않음
                 // 또한 max_slots가 0인 경우도 무제한으로 처리 (사용자 요청)
