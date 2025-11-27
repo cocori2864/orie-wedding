@@ -80,7 +80,6 @@ export function Header() {
 
                     {/* Desktop Navigation - Center */}
                     <nav className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2 z-10">
-                        <Link href="/" className="text-xs tracking-[2px] hover:opacity-50 transition-opacity">HOME</Link>
                         <Link href="/about" className="text-xs tracking-[2px] hover:opacity-50 transition-opacity">ABOUT</Link>
 
                         <div className="relative group">

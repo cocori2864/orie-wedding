@@ -56,7 +56,17 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             return;
         }
 
-        await processOrder(user.id, user.user_metadata?.name || user.email, user.user_metadata?.phone || "");
+        // Fetch phone from profiles table (updated in mypage)
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('phone, name')
+            .eq('id', user.id)
+            .single();
+
+        const userName = profile?.name || user.user_metadata?.name || user.email || '';
+        const userPhone = profile?.phone || user.user_metadata?.phone || '';
+
+        await processOrder(user.id, userName, userPhone);
     };
 
     const processOrder = async (userId: string | null, userName: string, userPhone: string, guestPassword?: string) => {
@@ -82,7 +92,7 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             status: "pending",
             total_amount: totalPrice,
             items: [orderItem],
-            wedding_date: weddingDate,
+            wedding_date: weddingDate?.toISOString().split('T')[0], // Convert to YYYY-MM-DD
             wedding_time: weddingTime,
             venue: venue,
             pickup_location: pickupLocation,
@@ -164,8 +174,8 @@ export function ProductInfo({ id, name, price, description, image, category, flo
                     }}
                     disabled={status !== 'active' && status !== undefined}
                     className={`w-full py-4 border border-orie-text text-sm font-semibold transition-opacity ${status === 'active' || status === undefined
-                            ? 'bg-orie-text text-white hover:opacity-90'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? 'bg-orie-text text-white hover:opacity-90'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         }`}
                 >
                     {status === 'active' || status === undefined ? '예약하기' : '예약 불가'}
