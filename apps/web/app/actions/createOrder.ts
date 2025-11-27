@@ -13,14 +13,17 @@ export async function createOrder(orderData: any, customerPhone: string, custome
         const weddingDate = orderData.wedding_date;
         if (weddingDate) {
             // Check if there is a limit for this date
-            const { data: capacity } = await supabase
+            const { data: capacity, error: capacityError } = await supabase
                 .from('daily_capacity')
                 .select('max_slots')
                 .eq('date', weddingDate)
                 .single();
 
+            console.log(`[createOrder] Date: ${weddingDate}, Capacity:`, capacity, "Error:", capacityError?.code);
+
             if (capacity) {
                 if (capacity.max_slots === 0) {
+                    console.log('[createOrder] Blocked: max_slots is 0');
                     throw new Error("해당 날짜는 예약이 마감되었습니다.");
                 }
 
@@ -33,10 +36,15 @@ export async function createOrder(orderData: any, customerPhone: string, custome
 
                 if (countError) throw countError;
 
+                console.log(`[createOrder] Count: ${count}, Max Slots: ${capacity.max_slots}`);
+
                 // max_slots가 null이면 무제한이므로 체크하지 않음
                 if (capacity.max_slots !== null && count !== null && count >= capacity.max_slots) {
+                    console.log('[createOrder] Blocked: count >= max_slots');
                     throw new Error("해당 날짜의 예약이 마감되었습니다.");
                 }
+            } else {
+                console.log('[createOrder] No capacity record found (Unlimited)');
             }
         }
 
