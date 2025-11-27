@@ -236,8 +236,12 @@ export function ProductInfo({ id, name, price, description, image, category, flo
                             />
                         ) : (
                             <button
-                                onClick={handleReserve}
-                                className="w-full py-4 mt-6 bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                                type="button"
+                                onClick={(e) => {
+                                    console.log('[ProductInfo] Button clicked directly');
+                                    handleReserve();
+                                }}
+                                className="w-full py-4 mt-6 bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity relative z-50"
                             >
                                 예약 하기
                             </button>
