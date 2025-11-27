@@ -43,7 +43,16 @@ export function ProductInfo({ id, name, price, description, image, category, flo
     }, []);
 
     const handleReserve = async () => {
+        console.log('[ProductInfo] handleReserve called');
+        console.log('[ProductInfo] Input data:', {
+            weddingDate,
+            weddingTime,
+            venue,
+            pickupLocation
+        });
+
         if (!weddingDate || !weddingTime || !venue || !pickupLocation) {
+            console.log('[ProductInfo] Validation failed - missing fields');
             alert("예식 정보와 수령 장소를 모두 입력해주세요.");
             return;
         }
