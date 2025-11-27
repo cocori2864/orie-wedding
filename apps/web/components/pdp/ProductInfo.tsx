@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
 import { BouquetOptions } from "./BouquetOptions";
+import { GuestOrderForm } from "../order/GuestOrderForm";
 import { createOrder } from "../../app/actions/createOrder";
 
 interface ProductInfoProps {
@@ -31,6 +32,7 @@ export function ProductInfo({ id, name, price, description, image, category, flo
     const [requests, setRequests] = useState("");
 
     const [showReservationModal, setShowReservationModal] = useState(false);
+    const [showGuestForm, setShowGuestForm] = useState(false);
 
     const router = useRouter();
     const supabase = createClient();
@@ -48,12 +50,15 @@ export function ProductInfo({ id, name, price, description, image, category, flo
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            if (confirm("로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?")) {
-                router.push("/login");
-            }
+            // 비회원 주문 폼 표시
+            setShowGuestForm(true);
             return;
         }
 
+        await processOrder(user.id, user.user_metadata?.name || user.email, user.user_metadata?.phone || "");
+    };
+
+    const processOrder = async (userId: string | null, userName: string, userPhone: string, guestPassword?: string) => {
         const totalPrice = (price + (corsageCount * 15000)) * quantity;
 
         const orderItem = {
@@ -70,9 +75,9 @@ export function ProductInfo({ id, name, price, description, image, category, flo
         };
 
         const orderData = {
-            user_id: user.id,
-            customer_name: user.user_metadata?.name || user.email,
-            customer_phone: user.user_metadata?.phone || "",
+            user_id: userId, // null for guest
+            customer_name: userName,
+            customer_phone: userPhone,
             status: "pending",
             total_amount: totalPrice,
             items: [orderItem],
@@ -85,8 +90,9 @@ export function ProductInfo({ id, name, price, description, image, category, flo
 
         const result = await createOrder(
             orderData,
-            user.user_metadata?.phone || "",
-            user.user_metadata?.name || user.email
+            userPhone,
+            userName,
+            guestPassword
         );
 
         if (!result.success) {
@@ -96,7 +102,18 @@ export function ProductInfo({ id, name, price, description, image, category, flo
         }
 
         alert("예약 접수가 완료되었습니다.");
-        router.push("/mypage");
+        if (userId) {
+            router.push("/mypage");
+        } else {
+            // 비회원은 주문 조회 페이지나 홈으로 이동 (추후 주문 완료 페이지로 변경 권장)
+            router.push("/");
+        }
+    };
+
+    const handleGuestSubmit = async (guestInfo: { name: string; phone: string; password: string }) => {
+        await processOrder(null, guestInfo.name, guestInfo.phone, guestInfo.password);
+        setShowGuestForm(false);
+        setShowReservationModal(false);
     };
 
     return (
@@ -129,13 +146,7 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             <div className="flex flex-col gap-4">
                 {/* Buttons */}
                 <button
-                    onClick={async () => {
-                        const { data: { user } } = await supabase.auth.getUser();
-                        if (!user) {
-                            alert("로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.");
-                            router.push("/login");
-                            return;
-                        }
+                    onClick={() => {
                         setShowReservationModal(true);
                     }}
                     className="w-full py-4 border border-orie-text bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
@@ -177,12 +188,19 @@ export function ProductInfo({ id, name, price, description, image, category, flo
                             setQuantity={setQuantity}
                         />
 
-                        <button
-                            onClick={handleReserve}
-                            className="w-full py-4 mt-6 bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                        >
-                            예약 하기
-                        </button>
+                        {showGuestForm ? (
+                            <GuestOrderForm
+                                onSubmit={handleGuestSubmit}
+                                onCancel={() => setShowGuestForm(false)}
+                            />
+                        ) : (
+                            <button
+                                onClick={handleReserve}
+                                className="w-full py-4 mt-6 bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                            >
+                                예약 하기
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

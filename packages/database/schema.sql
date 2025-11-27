@@ -83,12 +83,38 @@ create policy "Users can see own orders" on public.orders
 create policy "Admins can see all orders" on public.orders
   for select using (auth.uid() in (select id from public.profiles where role = 'admin'));
 
+-- Allow anonymous users to create orders
+create policy "Everyone can create orders" on public.orders
+  for insert with check (true);
+
+-- Order Items:
+create policy "Users can see own order items" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.orders
+      where orders.id = order_items.order_id
+      and orders.user_id = auth.uid()
+    )
+  );
+
+create policy "Admins can see all order items" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.profiles
+      where profiles.id = auth.uid()
+      and profiles.role = 'admin'
+    )
+  );
+
+create policy "Everyone can create order items" on public.order_items
+  for insert with check (true);
+
 -- Function to handle new user signup
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, name, role)
-  values (new.id, new.email, new.raw_user_meta_data->>'name', 'customer');
+  insert into public.profiles (id, email, name, phone, role)
+  values (new.id, new.email, new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'phone', 'customer');
   return new;
 end;
 $$ language plpgsql security definer;

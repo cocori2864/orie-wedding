@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Mail, Phone, Calendar, Edit, Trash2 } from "lucide-react";
+import { Search, Mail, Phone, Calendar } from "lucide-react";
 import { getCustomers } from "../actions/getCustomers";
 
 export default function CustomersPage() {
@@ -92,12 +92,7 @@ export default function CustomersPage() {
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                                <button className="flex-1 px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 rounded hover:bg-gray-100 transition-colors flex items-center justify-center gap-1">
-                                    <Edit size={14} />
-                                    상세 보기
-                                </button>
-                            </div>
+
                         </div>
                     ))
                 )}

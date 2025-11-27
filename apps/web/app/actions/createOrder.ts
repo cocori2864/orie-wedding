@@ -3,10 +3,18 @@
 import { createClient } from "../../lib/supabase/server";
 import { sendBankInfoAlimtalk } from "../../lib/alimtalk";
 
-export async function createOrder(orderData: any, customerPhone: string, customerName: string) {
+export async function createOrder(orderData: any, customerPhone: string, customerName: string, guestPassword?: string) {
     const supabase = await createClient();
 
     try {
+        // 0. 비회원 비밀번호 추가
+        if (guestPassword) {
+            orderData.guest_info = {
+                ...orderData.guest_info,
+                password: guestPassword
+            };
+        }
+
         // 1. 주문 저장
         const { data, error } = await supabase
             .from('orders')

@@ -185,9 +185,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
                             </div>
                         </div>
                         <div className="space-y-3 text-sm border-t border-gray-100 pt-4">
-                            {order.customer_phone && (
+                            {(order.customer_phone || order.guest_info?.phone) && (
                                 <div className="flex items-center gap-2 text-gray-600">
-                                    <span>📞</span> {order.customer_phone}
+                                    <span>📞</span> {order.customer_phone || order.guest_info?.phone}
                                 </div>
                             )}
                         </div>

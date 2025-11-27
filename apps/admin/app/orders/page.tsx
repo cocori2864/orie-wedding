@@ -32,6 +32,7 @@ export default async function OrdersPage({
         id: order.id.slice(0, 8).toUpperCase(),
         fullId: order.id,
         customer: order.customer_name || "Guest",
+        phone: order.customer_phone || order.guest_info?.phone || "-",
         date: new Date(order.created_at).toLocaleString('ko-KR', {
             timeZone: 'Asia/Seoul',
             year: 'numeric',
@@ -120,6 +121,9 @@ export default async function OrdersPage({
                                 고객명
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                연락처
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 접수일
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -136,7 +140,7 @@ export default async function OrdersPage({
                     <tbody className="divide-y divide-gray-100">
                         {orders.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                                     주문 내역이 없습니다
                                 </td>
                             </tr>
@@ -148,6 +152,9 @@ export default async function OrdersPage({
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-700">
                                         {order.customer}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                        {order.phone}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
                                         {order.date}
