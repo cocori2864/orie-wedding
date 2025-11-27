@@ -2,42 +2,38 @@
 
 import { createAdminClient } from "../../lib/supabase/admin";
 
-export async function getGuestOrder(orderId: string, password: string) {
+export async function getGuestOrder(name: string, phone: string, password: string) {
     const supabase = createAdminClient();
 
     try {
-        // 1. Fetch order by ID (using admin client to bypass RLS)
-        const { data: order, error } = await supabase
+        // 1. Find order by name and phone
+        const { data: orders, error: searchError } = await supabase
             .from('orders')
-            .select(`
-                *,
-                order_items (
-                    *,
-                    products (*)
-                )
-            `)
-            .eq('id', orderId)
-            .single();
+            .select('id, guest_info')
+            .eq('customer_name', name)
+            .eq('customer_phone', phone)
+            .is('user_id', null) // Only guest orders
+            .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        if (!order) throw new Error('Order not found');
+        if (searchError) throw searchError;
+
+        if (!orders || orders.length === 0) {
+            return { success: false, error: "일치하는 주문 정보가 없습니다." };
+        }
 
         // 2. Verify password
-        const guestInfo = order.guest_info as { password?: string } | null;
-        
-        if (!guestInfo || !guestInfo.password) {
-             throw new Error('Not a guest order or no password set');
+        const matchedOrder = orders.find(order => {
+            const guestInfo = order.guest_info as any;
+            return guestInfo?.password === password;
+        });
+
+        if (!matchedOrder) {
+            return { success: false, error: "비밀번호가 일치하지 않습니다." };
         }
 
-        if (guestInfo.password !== password) {
-            return { success: false, error: 'Password incorrect' };
-        }
-
-        // 3. Return order data (sanitize if necessary, but here we return full order)
-        return { success: true, data: order };
-
+        return { success: true, orderId: matchedOrder.id };
     } catch (error: any) {
-        console.error("Error fetching guest order:", error);
-        return { success: false, error: error.message || 'Failed to fetch order' };
+        console.error("Guest order lookup error:", error);
+        return { success: false, error: "주문 조회 중 오류가 발생했습니다." };
     }
 }

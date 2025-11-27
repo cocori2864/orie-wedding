@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "../../lib/supabase/client";
+import { getGuestOrder } from "../../app/actions/getGuestOrder";
 
 export function GuestOrderLookup() {
     const [name, setName] = useState("");
@@ -11,7 +11,6 @@ export function GuestOrderLookup() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    const supabase = createClient();
 
     const handleLookup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -19,46 +18,16 @@ export function GuestOrderLookup() {
         setError(null);
 
         try {
-            // 1. Find order by name and phone
-            const { data: orders, error: searchError } = await supabase
-                .from('orders')
-                .select('id, guest_info')
-                .eq('customer_name', name)
-                .eq('customer_phone', phone)
-                .is('user_id', null) // Only guest orders
-                .order('created_at', { ascending: false });
+            const result = await getGuestOrder(name, phone, password);
 
-            if (searchError) throw searchError;
-
-            if (!orders || orders.length === 0) {
-                throw new Error("일치하는 주문 정보가 없습니다.");
+            if (!result.success) {
+                throw new Error(result.error);
             }
 
-            // 2. Verify password
-            // Since we store password in JSONB, we need to check it in application layer
-            // Ideally this should be done via RPC or Edge Function for security, 
-            // but for this MVP we check client-side or fetch the matching record.
-            // Note: RLS might prevent reading guest_info if not configured correctly.
-            // Assuming public access or appropriate policy for guest lookup.
-
-            const matchedOrder = orders.find(order => {
-                const guestInfo = order.guest_info as any;
-                return guestInfo?.password === password;
-            });
-
-            if (!matchedOrder) {
-                throw new Error("비밀번호가 일치하지 않습니다.");
+            if (result.orderId) {
+                sessionStorage.setItem(`guest_order_${result.orderId}`, password);
+                router.push(`/orders/${result.orderId}`);
             }
-
-            // 3. Redirect to order detail page
-            // We might need a special route for guest order view or use the same order detail page
-            // but with a token or just by ID if RLS allows.
-            // For now, let's assume we can go to /orders/[id] and the page handles guest view
-            // possibly by storing a session token or just allowing public view for now (risky).
-            // A better approach: Store a temporary 'guest_token' in sessionStorage and verify it on the page.
-
-            sessionStorage.setItem(`guest_order_${matchedOrder.id}`, password);
-            router.push(`/orders/${matchedOrder.id}`);
 
         } catch (err: any) {
             console.error("Lookup error:", err);
