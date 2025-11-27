@@ -50,8 +50,11 @@ export function ProductInfo({ id, name, price, description, image, category, flo
 
         const { data: { user } } = await supabase.auth.getUser();
 
+        console.log('[ProductInfo] User check:', user ? 'Logged in' : 'Not logged in');
+
         if (!user) {
             // 비회원 주문 폼 표시
+            console.log('[ProductInfo] Showing guest form');
             setShowGuestForm(true);
             return;
         }
@@ -126,6 +129,8 @@ export function ProductInfo({ id, name, price, description, image, category, flo
         setShowGuestForm(false);
         setShowReservationModal(false);
     };
+
+    console.log('[ProductInfo] Render state - showGuestForm:', showGuestForm);
 
     return (
         <div className="w-full md:w-1/2 md:pl-20 md:sticky md:top-24 h-fit">
