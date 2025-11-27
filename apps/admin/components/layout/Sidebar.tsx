@@ -8,6 +8,7 @@ import {
     Package,
     Users,
     Megaphone,
+    Calendar,
     Settings,
     LogOut
 } from "lucide-react";
@@ -15,6 +16,7 @@ import {
 const menuItems = [
     { icon: LayoutDashboard, label: "대시보드", href: "/" },
     { icon: ShoppingBag, label: "주문 관리", href: "/orders" },
+    { icon: Calendar, label: "예약 슬롯 관리", href: "/calendar" },
     { icon: Package, label: "상품 관리", href: "/products" },
     { icon: Users, label: "고객 관리", href: "/customers" },
     { icon: Megaphone, label: "마케팅", href: "/marketing" },

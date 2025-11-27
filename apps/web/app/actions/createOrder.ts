@@ -7,7 +7,37 @@ export async function createOrder(orderData: any, customerPhone: string, custome
     const supabase = await createClient();
 
     try {
-        // 0. 비회원 비밀번호 추가
+        // 0. Check Capacity
+        const weddingDate = orderData.wedding_date;
+        if (weddingDate) {
+            // Check if there is a limit for this date
+            const { data: capacity } = await supabase
+                .from('daily_capacity')
+                .select('max_slots')
+                .eq('date', weddingDate)
+                .single();
+
+            if (capacity) {
+                if (capacity.max_slots === 0) {
+                    throw new Error("해당 날짜는 예약이 마감되었습니다.");
+                }
+
+                // Check current order count
+                const { count, error: countError } = await supabase
+                    .from('orders')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('wedding_date', weddingDate)
+                    .neq('status', 'cancelled');
+
+                if (countError) throw countError;
+
+                if (count !== null && count >= capacity.max_slots) {
+                    throw new Error("해당 날짜의 예약이 마감되었습니다.");
+                }
+            }
+        }
+
+        // 0.5. 비회원 비밀번호 추가
         if (guestPassword) {
             orderData.guest_info = {
                 ...orderData.guest_info,

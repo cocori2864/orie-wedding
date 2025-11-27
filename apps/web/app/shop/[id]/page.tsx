@@ -40,6 +40,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     category={product.category}
                     flowers={product.flowers}
                     color={product.color}
+                    status={product.status}
                 />
             </div>
         </main>

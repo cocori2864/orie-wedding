@@ -16,9 +16,10 @@ interface ProductInfoProps {
     category?: string;
     flowers?: string;
     color?: string;
+    status?: string;
 }
 
-export function ProductInfo({ id, name, price, description, image, category, flowers, color }: ProductInfoProps) {
+export function ProductInfo({ id, name, price, description, image, category, flowers, color, status }: ProductInfoProps) {
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -144,14 +145,30 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             </div>
 
             <div className="flex flex-col gap-4">
+                {/* Status Warning */}
+                {status && status !== 'active' && (
+                    <div className="bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800">
+                        {status === 'archived' && '이 상품은 현재 판매가 중단되었습니다.'}
+                        {status === 'draft' && '이 상품은 준비 중입니다.'}
+                    </div>
+                )}
+
                 {/* Buttons */}
                 <button
                     onClick={() => {
+                        if (status && status !== 'active') {
+                            alert('현재 예약이 불가능한 상품입니다.');
+                            return;
+                        }
                         setShowReservationModal(true);
                     }}
-                    className="w-full py-4 border border-orie-text bg-orie-text text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                    disabled={status !== 'active' && status !== undefined}
+                    className={`w-full py-4 border border-orie-text text-sm font-semibold transition-opacity ${status === 'active' || status === undefined
+                            ? 'bg-orie-text text-white hover:opacity-90'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
                 >
-                    예약하기
+                    {status === 'active' || status === undefined ? '예약하기' : '예약 불가'}
                 </button>
             </div>
 
