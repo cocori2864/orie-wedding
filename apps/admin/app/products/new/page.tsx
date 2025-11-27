@@ -189,7 +189,7 @@ export default function NewProductPage() {
                         >
                             <option value="active">판매중</option>
                             <option value="draft">임시저장</option>
-                            <option value="archived">보관됨</option>
+                            <option value="discontinued">판매중지</option>
                         </select>
                     </div>
 
