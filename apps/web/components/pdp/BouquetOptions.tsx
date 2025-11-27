@@ -41,21 +41,31 @@ export function BouquetOptions({
 }: BouquetOptionsProps) {
     const [blockedDates, setBlockedDates] = useState<Date[]>([]);
     const [fullDates, setFullDates] = useState<Date[]>([]);
+    const [isLoadingDates, setIsLoadingDates] = useState(true);
 
     useEffect(() => {
         const fetchUnavailableDates = async () => {
-            // Fetch blocked dates (max_slots = 0)
-            const blockedResult = await getBlockedDates();
-            if (blockedResult.success && blockedResult.data) {
-                const dates = blockedResult.data.map((item: any) => new Date(item.date + 'T00:00:00'));
-                setBlockedDates(dates);
-            }
+            setIsLoadingDates(true);
+            try {
+                // Fetch blocked dates (max_slots = 0)
+                const blockedResult = await getBlockedDates();
+                if (blockedResult.success && blockedResult.data) {
+                    const dates = blockedResult.data.map((item: any) => new Date(item.date + 'T00:00:00'));
+                    setBlockedDates(dates);
+                    console.log('[BouquetOptions] Blocked dates loaded:', dates.map(d => d.toISOString().split('T')[0]));
+                }
 
-            // Fetch full dates (reservations >= max_slots)
-            const fullResult = await getFullDates();
-            if (fullResult.success && fullResult.data) {
-                const dates = fullResult.data.map((dateStr: string) => new Date(dateStr + 'T00:00:00'));
-                setFullDates(dates);
+                // Fetch full dates (reservations >= max_slots)
+                const fullResult = await getFullDates();
+                if (fullResult.success && fullResult.data) {
+                    const dates = fullResult.data.map((dateStr: string) => new Date(dateStr + 'T00:00:00'));
+                    setFullDates(dates);
+                    console.log('[BouquetOptions] Full dates loaded:', dates.map(d => d.toISOString().split('T')[0]));
+                }
+            } catch (error) {
+                console.error('[BouquetOptions] Error loading unavailable dates:', error);
+            } finally {
+                setIsLoadingDates(false);
             }
         };
 
