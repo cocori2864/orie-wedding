@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { addDays } from "date-fns";
+import { getBlockedDates, getFullDates } from "../../app/actions/getAvailableDates";
 
 interface BouquetOptionsProps {
     weddingDate: Date | null;
@@ -38,6 +39,45 @@ export function BouquetOptions({
     quantity,
     setQuantity
 }: BouquetOptionsProps) {
+    const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+    const [fullDates, setFullDates] = useState<Date[]>([]);
+
+    useEffect(() => {
+        const fetchUnavailableDates = async () => {
+            // Fetch blocked dates (max_slots = 0)
+            const blockedResult = await getBlockedDates();
+            if (blockedResult.success && blockedResult.data) {
+                const dates = blockedResult.data.map((item: any) => new Date(item.date + 'T00:00:00'));
+                setBlockedDates(dates);
+            }
+
+            // Fetch full dates (reservations >= max_slots)
+            const fullResult = await getFullDates();
+            if (fullResult.success && fullResult.data) {
+                const dates = fullResult.data.map((dateStr: string) => new Date(dateStr + 'T00:00:00'));
+                setFullDates(dates);
+            }
+        };
+
+        fetchUnavailableDates();
+    }, []);
+
+    const isDateUnavailable = (date: Date) => {
+        const dateStr = date.toISOString().split('T')[0];
+
+        // Check if date is in blocked list
+        const isBlocked = blockedDates.some(blockedDate =>
+            blockedDate.toISOString().split('T')[0] === dateStr
+        );
+
+        // Check if date is in full list
+        const isFull = fullDates.some(fullDate =>
+            fullDate.toISOString().split('T')[0] === dateStr
+        );
+
+        return isBlocked || isFull;
+    };
+
     return (
         <div className="flex flex-col gap-6">
             {/* Quantity Selector */}
@@ -67,11 +107,12 @@ export function BouquetOptions({
                     selected={weddingDate}
                     onChange={(date) => setWeddingDate(date)}
                     minDate={addDays(new Date(), 7)} // Minimum 7 days lead time
+                    filterDate={(date) => !isDateUnavailable(date)}
                     placeholderText="날짜를 선택해주세요"
                     className="w-full p-3 border border-orie-text/20 text-sm focus:outline-none focus:border-orie-text"
                     dateFormat="yyyy.MM.dd"
                 />
-                <p className="text-xs text-orie-text/40">* 최소 7일 전 예약이 필요합니다.</p>
+                <p className="text-xs text-orie-text/40">* 최소 7일 전 예약이 필요합니다. 예약 불가 날짜는 선택할 수 없습니다.</p>
             </div>
 
             {/* Wedding Time */}
