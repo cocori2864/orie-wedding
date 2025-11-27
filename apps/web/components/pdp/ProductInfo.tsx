@@ -97,7 +97,7 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             }
         };
 
-        const orderData = {
+        const orderData: any = {
             user_id: userId, // null for guest
             customer_name: userName,
             customer_phone: userPhone,
@@ -110,6 +110,14 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             pickup_location: pickupLocation,
             requests: requests
         };
+
+        if (!userId && guestPassword) {
+            orderData.guest_info = {
+                name: userName,
+                phone: userPhone,
+                password: guestPassword
+            };
+        }
 
         const result = await createOrder(
             orderData,

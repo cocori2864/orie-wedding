@@ -116,13 +116,13 @@ export function BouquetOptions({
                 <DatePicker
                     selected={weddingDate}
                     onChange={(date) => setWeddingDate(date)}
-                    minDate={addDays(new Date(), 7)} // Minimum 7 days lead time
+                    minDate={addDays(new Date(), 14)} // Minimum 14 days lead time
                     filterDate={(date) => !isDateUnavailable(date)}
                     placeholderText="날짜를 선택해주세요"
                     className="w-full p-3 border border-orie-text/20 text-sm focus:outline-none focus:border-orie-text"
                     dateFormat="yyyy.MM.dd"
                 />
-                <p className="text-xs text-orie-text/40">* 최소 7일 전 예약이 필요합니다. 예약 불가 날짜는 선택할 수 없습니다.</p>
+                <p className="text-xs text-orie-text/40">* 최소 14일 전 예약이 필요합니다. 예약 불가 날짜는 선택할 수 없습니다.</p>
             </div>
 
             {/* Wedding Time */}
