@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
+import { GuestOrderLookup } from "../../components/order/GuestOrderLookup";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -66,8 +67,8 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-orie-bg">
-            <div className="w-full max-w-md p-8">
+        <main className="min-h-screen flex flex-col items-center justify-center bg-orie-bg py-20">
+            <div className="w-full max-w-md p-8 bg-white shadow-sm">
                 <div className="text-center mb-12">
                     <Link href="/" className="font-serif text-3xl font-bold tracking-[2px] text-orie-text">
                         ORIÉ
@@ -136,7 +137,7 @@ export default function LoginPage() {
                             <div className="w-full border-t border-gray-200"></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-orie-bg text-gray-500">또는 소셜 계정으로 로그인</span>
+                            <span className="px-2 bg-white text-gray-500">또는 소셜 계정으로 로그인</span>
                         </div>
                     </div>
 
@@ -186,6 +187,8 @@ export default function LoginPage() {
                     </div>
                 </form>
             </div>
+
+            <GuestOrderLookup />
         </main>
     );
 }

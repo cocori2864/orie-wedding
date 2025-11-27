@@ -206,7 +206,7 @@ export function ProductInfo({ id, name, price, description, image, category, flo
 
             {/* Reservation Modal */}
             {showReservationModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white w-full max-w-md p-6 max-h-[90vh] overflow-y-auto relative shadow-xl">
                         <button
                             onClick={() => setShowReservationModal(false)}
