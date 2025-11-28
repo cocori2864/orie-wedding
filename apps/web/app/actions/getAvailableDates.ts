@@ -1,9 +1,9 @@
 'use server'
 
-import { createClient } from "../../lib/supabase/server";
+import { createAdminClient } from "../../lib/supabase/admin";
 
 export async function getBlockedDates() {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     try {
         const { data, error } = await supabase
@@ -21,14 +21,19 @@ export async function getBlockedDates() {
 }
 
 export async function getFullDates() {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     try {
-        // Get all dates with capacity limits
+        // Get all dates with capacity limits (future only)
+        const today = new Date();
+        const offset = today.getTimezoneOffset() * 60000;
+        const todayStr = new Date(today.getTime() - offset).toISOString().split('T')[0];
+
         const { data: capacities, error: capacityError } = await supabase
             .from('daily_capacity')
             .select('date, max_slots')
-            .gt('max_slots', 0); // Dates with limits (not blocked, not unlimited)
+            .gt('max_slots', 0)
+            .gte('date', todayStr); // Dates with limits (not blocked, not unlimited)
 
         if (capacityError) throw capacityError;
 
@@ -60,7 +65,9 @@ export async function getFullDates() {
             if (countError) continue;
 
             const maxSlots = Number(capacity.max_slots);
+            // console.log(`[getFullDates] Date: ${capacity.date}, Count: ${count}, Max: ${maxSlots}`);
             if (count !== null && maxSlots > 0 && count >= maxSlots) {
+                console.log(`[getFullDates] Full Date Found: ${capacity.date} (Count: ${count}, Max: ${maxSlots})`);
                 fullDates.push(capacity.date);
             }
         }

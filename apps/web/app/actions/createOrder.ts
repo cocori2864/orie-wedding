@@ -3,6 +3,7 @@
 import { createClient } from "../../lib/supabase/server";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { sendBankInfoAlimtalk } from "../../lib/alimtalk";
+import { revalidatePath } from "next/cache";
 
 export async function createOrder(orderData: any, customerPhone: string, customerName: string, guestPassword?: string) {
     // Use admin client for DB operations to bypass RLS (especially for guest orders)
@@ -90,6 +91,7 @@ export async function createOrder(orderData: any, customerPhone: string, custome
             console.error("알림톡 발송 중 에러 (주문은 성공):", alimtalkError);
         }
 
+        revalidatePath('/', 'layout');
         return { success: true, data };
     } catch (error: any) {
         console.error("주문 생성 실패:", error);

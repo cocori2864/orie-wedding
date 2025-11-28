@@ -145,7 +145,10 @@ export function ProductInfo({ id, name, price, description, image, category, flo
 
         if (!result.success) {
             console.error("Error creating order:", result.error);
-            if (result.error.includes("마감")) {
+            console.log("Error message type:", typeof result.error);
+            console.log("Error message content:", result.error);
+
+            if (typeof result.error === 'string' && result.error.includes("마감")) {
                 alert("선택하신 날짜는 예약이 마감되었습니다. 페이지를 새로고침하여 최신 예약 현황을 확인해주세요.");
                 window.location.reload();
             } else {
