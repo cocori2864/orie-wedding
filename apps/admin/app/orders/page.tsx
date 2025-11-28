@@ -11,12 +11,17 @@ export default async function OrdersPage({
     const params = await searchParams;
     const supabase = createAdminClient();
     const status = typeof params.status === 'string' ? params.status : undefined;
+    const sort = typeof params.sort === 'string' ? params.sort : 'created_at';
+    const orderDir = typeof params.order === 'string' ? params.order : 'desc';
 
-    let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('orders').select('*');
 
     if (status) {
         query = query.eq('status', status);
     }
+
+    // Apply sorting
+    query = query.order(sort, { ascending: orderDir === 'asc' });
 
     const { data: ordersData, error } = await query;
 
@@ -42,6 +47,7 @@ export default async function OrdersPage({
             minute: '2-digit',
             hour12: false
         }),
+        weddingDate: order.wedding_date || "-",
         status: order.status,
         total: order.total_amount,
         items: order.items?.length || 0,
@@ -70,6 +76,21 @@ export default async function OrdersPage({
             cancelled: '취소됨',
         };
         return statusMap[status] || status;
+    };
+
+    const SortLink = ({ column, label }: { column: string, label: string }) => {
+        const isActive = sort === column;
+        const nextDir = isActive && orderDir === 'desc' ? 'asc' : 'desc';
+        const href = `?${new URLSearchParams({ ...params as any, sort: column, order: nextDir }).toString()}`;
+
+        return (
+            <Link href={href} className="flex items-center gap-1 hover:text-gray-700 group">
+                {label}
+                <span className={`text-gray-400 ${isActive ? 'text-gray-700' : 'opacity-0 group-hover:opacity-50'}`}>
+                    {isActive ? (orderDir === 'asc' ? '↑' : '↓') : '↕'}
+                </span>
+            </Link>
+        );
     };
 
     return (
@@ -118,19 +139,22 @@ export default async function OrdersPage({
                                 주문번호
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                고객명
+                                <SortLink column="customer_name" label="고객명" />
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 연락처
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                접수일
+                                <SortLink column="wedding_date" label="수령일" />
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                상태
+                                <SortLink column="created_at" label="접수일" />
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                금액
+                                <SortLink column="status" label="상태" />
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <SortLink column="total_amount" label="금액" />
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 관리
@@ -140,7 +164,7 @@ export default async function OrdersPage({
                     <tbody className="divide-y divide-gray-100">
                         {orders.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                                     주문 내역이 없습니다
                                 </td>
                             </tr>
@@ -155,6 +179,9 @@ export default async function OrdersPage({
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         {order.phone}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                                        {order.weddingDate}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
                                         {order.date}

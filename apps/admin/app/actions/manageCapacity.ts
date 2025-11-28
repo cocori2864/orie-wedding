@@ -54,3 +54,26 @@ export async function getMonthlyCapacity(year: number, month: number) {
         return { success: false, error: error.message };
     }
 }
+
+export async function getMonthlyOrders(year: number, month: number) {
+    const supabase = createAdminClient();
+
+    // Calculate start and end dates of the month
+    const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
+    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+
+    try {
+        const { data, error } = await supabase
+            .from('orders')
+            .select('id, wedding_date, customer_name, guest_info')
+            .gte('wedding_date', startDate)
+            .lte('wedding_date', endDate)
+            .neq('status', 'cancelled');
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error: any) {
+        console.error("Error fetching monthly orders:", error);
+        return { success: false, error: error.message };
+    }
+}

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { getMonthlyCapacity, manageCapacity } from "../actions/manageCapacity";
+import { getMonthlyCapacity, manageCapacity, getMonthlyOrders } from "../actions/manageCapacity";
 
 export default function CalendarPage() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [capacities, setCapacities] = useState<Record<string, number>>({});
+    const [orders, setOrders] = useState<Record<string, any[]>>({});
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [limitInput, setLimitInput] = useState("");
@@ -16,17 +17,31 @@ export default function CalendarPage() {
     const month = currentDate.getMonth() + 1;
 
     useEffect(() => {
-        fetchCapacities();
+        fetchData();
     }, [year, month]);
 
-    const fetchCapacities = async () => {
-        const result = await getMonthlyCapacity(year, month);
-        if (result.success && result.data) {
+    const fetchData = async () => {
+        const [capacityResult, ordersResult] = await Promise.all([
+            getMonthlyCapacity(year, month),
+            getMonthlyOrders(year, month)
+        ]);
+
+        if (capacityResult.success && capacityResult.data) {
             const capMap: Record<string, number> = {};
-            result.data.forEach((item: any) => {
+            capacityResult.data.forEach((item: any) => {
                 capMap[item.date] = item.max_slots;
             });
             setCapacities(capMap);
+        }
+
+        if (ordersResult.success && ordersResult.data) {
+            const orderMap: Record<string, any[]> = {};
+            ordersResult.data.forEach((order: any) => {
+                const date = order.wedding_date;
+                if (!orderMap[date]) orderMap[date] = [];
+                orderMap[date].push(order);
+            });
+            setOrders(orderMap);
         }
     };
 
@@ -61,7 +76,7 @@ export default function CalendarPage() {
         const result = await manageCapacity(selectedDate, limit);
         if (result.success) {
             setModalOpen(false);
-            fetchCapacities();
+            fetchData();
         } else {
             alert("저장 실패: " + result.error);
         }
@@ -110,34 +125,54 @@ export default function CalendarPage() {
 
                         const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                         const limit = capacities[dateStr];
+                        const dayOrders = orders[dateStr] || [];
                         const isBlocked = limit === 0;
                         const hasLimit = limit !== undefined;
+                        const isFull = hasLimit && !isBlocked && dayOrders.length >= limit;
 
                         return (
                             <button
                                 key={day}
                                 onClick={() => handleDateClick(day)}
                                 className={`
-                                    h-24 rounded-lg border p-2 flex flex-col items-start justify-between transition-colors
+                                    min-h-[120px] rounded-lg border p-2 flex flex-col items-start justify-between transition-colors relative overflow-hidden
                                     ${isBlocked
                                         ? 'bg-red-50 border-red-200 hover:bg-red-100'
-                                        : hasLimit
-                                            ? 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
-                                            : 'bg-white border-gray-100 hover:border-gray-300 hover:shadow-sm'
+                                        : isFull
+                                            ? 'bg-orange-50 border-orange-200 hover:bg-orange-100'
+                                            : hasLimit
+                                                ? 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
+                                                : 'bg-white border-gray-100 hover:border-gray-300 hover:shadow-sm'
                                     }
                                 `}
                             >
-                                <span className={`text-sm font-medium ${isBlocked ? 'text-red-700' : 'text-gray-700'}`}>
-                                    {day}
-                                </span>
-                                <div className="self-end">
+                                <div className="flex justify-between w-full mb-2">
+                                    <span className={`text-sm font-medium ${isBlocked ? 'text-red-700' : 'text-gray-700'}`}>
+                                        {day}
+                                    </span>
+                                    {dayOrders.length > 0 && (
+                                        <span className="text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
+                                            {dayOrders.length}건
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="w-full space-y-1 overflow-y-auto max-h-[60px] text-left">
+                                    {dayOrders.map((order, i) => (
+                                        <div key={i} className="text-[10px] text-gray-600 truncate bg-white/50 px-1 rounded">
+                                            {order.customer_name || order.guest_info?.name || "Guest"}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="self-end mt-2">
                                     {isBlocked ? (
                                         <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full">
-                                            예약 불가
+                                            불가
                                         </span>
                                     ) : hasLimit ? (
-                                        <span className="text-xs font-medium text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
-                                            최대 {limit}건
+                                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${isFull ? 'text-orange-700 bg-orange-100' : 'text-yellow-700 bg-yellow-100'}`}>
+                                            {dayOrders.length}/{limit}
                                         </span>
                                     ) : (
                                         <span className="text-xs text-gray-400">
