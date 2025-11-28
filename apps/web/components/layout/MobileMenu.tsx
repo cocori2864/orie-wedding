@@ -47,7 +47,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] md:hidden">
+        <div className="fixed inset-0 z-[9999] md:hidden">
             <div
                 className="absolute inset-0 bg-black/50"
                 onClick={onClose}

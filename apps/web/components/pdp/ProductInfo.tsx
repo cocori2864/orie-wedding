@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
 import { BouquetOptions } from "./BouquetOptions";
@@ -41,6 +42,18 @@ export function ProductInfo({ id, name, price, description, image, category, flo
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // 모달이 열릴 때 body 스크롤 막기
+    useEffect(() => {
+        if (showReservationModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [showReservationModal]);
 
     const handleReserve = async () => {
         console.log('[ProductInfo] handleReserve called');
@@ -104,7 +117,11 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             status: "pending",
             total_amount: totalPrice,
             items: [orderItem],
-            wedding_date: weddingDate?.toISOString().split('T')[0], // Convert to YYYY-MM-DD
+            wedding_date: (() => {
+                if (!weddingDate) return null;
+                const offset = weddingDate.getTimezoneOffset() * 60000;
+                return new Date(weddingDate.getTime() - offset).toISOString().split('T')[0];
+            })(),
             wedding_time: weddingTime,
             venue: venue,
             pickup_location: pickupLocation,
@@ -128,7 +145,12 @@ export function ProductInfo({ id, name, price, description, image, category, flo
 
         if (!result.success) {
             console.error("Error creating order:", result.error);
-            alert(`예약 접수 중 오류가 발생했습니다: ${result.error}`);
+            if (result.error.includes("마감")) {
+                alert("선택하신 날짜는 예약이 마감되었습니다. 페이지를 새로고침하여 최신 예약 현황을 확인해주세요.");
+                window.location.reload();
+            } else {
+                alert(`예약 접수 중 오류가 발생했습니다: ${result.error}`);
+            }
             return;
         }
 
@@ -205,9 +227,9 @@ export function ProductInfo({ id, name, price, description, image, category, flo
             </div>
 
             {/* Reservation Modal */}
-            {showReservationModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white w-full max-w-md p-6 max-h-[90vh] overflow-y-auto relative shadow-xl">
+            {showReservationModal && mounted && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/50 p-4 overflow-y-auto">
+                    <div className="bg-white w-full max-w-md p-6 my-8 relative shadow-xl">
                         <button
                             onClick={() => setShowReservationModal(false)}
                             className="absolute top-4 right-4 text-orie-text hover:opacity-50"
@@ -255,7 +277,8 @@ export function ProductInfo({ id, name, price, description, image, category, flo
                             </button>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
         </div >

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Footer() {
     return (
-        <footer className="bg-orie-bg-secondary py-20 border-t border-orie-text/10 text-center text-orie-text">
+        <footer className="relative z-0 bg-orie-bg-secondary py-20 border-t border-orie-text/10 text-center text-orie-text">
             <div className="font-serif text-xl font-bold mb-8 tracking-wider">ORIÉ</div>
             <div className="flex justify-center gap-8 mb-10">
                 <Link href="/terms" className="text-sm opacity-70 hover:opacity-100 transition-opacity">

@@ -50,17 +50,31 @@ export function BouquetOptions({
                 // Fetch blocked dates (max_slots = 0)
                 const blockedResult = await getBlockedDates();
                 if (blockedResult.success && blockedResult.data) {
-                    const dates = blockedResult.data.map((item: any) => new Date(item.date + 'T00:00:00'));
+                    const dates = blockedResult.data.map((item: any) => {
+                        const parts = item.date.split('-').map(Number);
+                        const y = parts[0];
+                        const m = parts[1];
+                        const d = parts[2];
+                        if (!y || !m || !d) return null;
+                        return new Date(y, m - 1, d);
+                    }).filter(Boolean) as Date[];
                     setBlockedDates(dates);
-                    console.log('[BouquetOptions] Blocked dates loaded:', dates.map(d => d.toISOString().split('T')[0]));
+                    console.log('[BouquetOptions] Blocked dates loaded:', dates);
                 }
 
                 // Fetch full dates (reservations >= max_slots)
                 const fullResult = await getFullDates();
                 if (fullResult.success && fullResult.data) {
-                    const dates = fullResult.data.map((dateStr: string) => new Date(dateStr + 'T00:00:00'));
+                    const dates = fullResult.data.map((dateStr: string) => {
+                        const parts = dateStr.split('-').map(Number);
+                        const y = parts[0];
+                        const m = parts[1];
+                        const d = parts[2];
+                        if (!y || !m || !d) return null;
+                        return new Date(y, m - 1, d);
+                    }).filter(Boolean) as Date[];
                     setFullDates(dates);
-                    console.log('[BouquetOptions] Full dates loaded:', dates.map(d => d.toISOString().split('T')[0]));
+                    console.log('[BouquetOptions] Full dates loaded:', dates);
                 }
             } catch (error) {
                 console.error('[BouquetOptions] Error loading unavailable dates:', error);
@@ -73,17 +87,26 @@ export function BouquetOptions({
     }, []);
 
     const isDateUnavailable = (date: Date) => {
-        const dateStr = date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
 
         // Check if date is in blocked list
-        const isBlocked = blockedDates.some(blockedDate =>
-            blockedDate.toISOString().split('T')[0] === dateStr
-        );
+        const isBlocked = blockedDates.some(blockedDate => {
+            const y = blockedDate.getFullYear();
+            const m = String(blockedDate.getMonth() + 1).padStart(2, '0');
+            const d = String(blockedDate.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}` === dateStr;
+        });
 
         // Check if date is in full list
-        const isFull = fullDates.some(fullDate =>
-            fullDate.toISOString().split('T')[0] === dateStr
-        );
+        const isFull = fullDates.some(fullDate => {
+            const y = fullDate.getFullYear();
+            const m = String(fullDate.getMonth() + 1).padStart(2, '0');
+            const d = String(fullDate.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}` === dateStr;
+        });
 
         return isBlocked || isFull;
     };

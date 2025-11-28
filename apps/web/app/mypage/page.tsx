@@ -137,9 +137,12 @@ export default function MyPage() {
     const getRefundInfo = (weddingDateStr: string) => {
         if (!weddingDateStr) return null;
 
-        const weddingDate = new Date(weddingDateStr);
-        // Set time to midnight for accurate day calculation
-        weddingDate.setHours(0, 0, 0, 0);
+        const parts = weddingDateStr.split('-').map(Number);
+        const y = parts[0];
+        const m = parts[1];
+        const d = parts[2];
+        if (!y || !m || !d) return null;
+        const weddingDate = new Date(y, m - 1, d); // Local midnight
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -301,7 +304,7 @@ export default function MyPage() {
 
             {/* Cancel Modal */}
             {showCancelModal && selectedOrder && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-xl">
                         <h3 className="text-lg font-medium mb-4 text-orie-text">예약 취소 및 환불 규정</h3>
 

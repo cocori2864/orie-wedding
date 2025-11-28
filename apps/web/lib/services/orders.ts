@@ -66,25 +66,3 @@ export async function createOrder(orderData: {
     }
 }
 
-export async function getUserOrders(userId: string) {
-    const supabase = createClient();
-
-    const { data, error } = await supabase
-        .from('orders')
-        .select(`
-      *,
-      order_items (
-        *,
-        products (*)
-      )
-    `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching orders:', error);
-        return [];
-    }
-
-    return data;
-}

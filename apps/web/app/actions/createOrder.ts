@@ -29,9 +29,13 @@ export async function createOrder(orderData: any, customerPhone: string, custome
 
                 // Check current order count
                 // Use range query to handle both DATE and TIMESTAMP types safely
-                const nextDate = new Date(weddingDate);
-                nextDate.setDate(nextDate.getDate() + 1);
-                const nextDateString = nextDate.toISOString().split('T')[0];
+                const [y, m, d] = weddingDate.split('-').map(Number);
+                const date = new Date(y, m - 1, d);
+                date.setDate(date.getDate() + 1);
+                const nextY = date.getFullYear();
+                const nextM = String(date.getMonth() + 1).padStart(2, '0');
+                const nextD = String(date.getDate()).padStart(2, '0');
+                const nextDateString = `${nextY}-${nextM}-${nextD}`;
 
                 const { count, error: countError } = await supabase
                     .from('orders')

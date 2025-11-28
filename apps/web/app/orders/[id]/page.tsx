@@ -77,19 +77,50 @@ export default function OrderDetailPage() {
                 </div>
 
                 {/* Order Status */}
-                <div className="mb-12 p-6 bg-gray-50 border border-gray-100 text-center">
+                {/* Order Status */}
+                <div className={`mb-12 p-6 border text-center ${order.status === 'confirmed' ? 'bg-green-50 border-green-100' :
+                        order.status === 'payment_pending' ? 'bg-orange-50 border-orange-100' :
+                            order.status === 'production_completed' ? 'bg-blue-50 border-blue-100' :
+                                order.status === 'cancelled' ? 'bg-red-50 border-red-100' :
+                                    'bg-gray-50 border-gray-100'
+                    }`}>
                     <span className="text-sm text-orie-text/60 block mb-2">주문 상태</span>
-                    <span className="text-xl font-semibold text-orie-text">
-                        {order.status === 'pending' && '예약 접수 (입금 대기)'}
+                    <span className={`text-xl font-semibold ${order.status === 'confirmed' ? 'text-green-700' :
+                            order.status === 'payment_pending' ? 'text-orange-700' :
+                                order.status === 'production_completed' ? 'text-blue-700' :
+                                    order.status === 'cancelled' ? 'text-red-700' :
+                                        'text-orie-text'
+                        }`}>
+                        {order.status === 'pending' && '예약 대기중'}
+                        {order.status === 'payment_pending' && '예약금 대기 중'}
                         {order.status === 'confirmed' && '예약 확정'}
+                        {order.status === 'production_completed' && '제작 완료 (잔금 대기)'}
+                        {order.status === 'completed' && '주문 완료'}
                         {order.status === 'cancelled' && '취소됨'}
-                        {order.status === 'completed' && '완료됨'}
                     </span>
-                    {order.status === 'pending' && (
-                        <p className="mt-4 text-sm text-orie-text/80">
-                            아래 계좌로 입금해주시면 예약이 확정됩니다.<br />
-                            <span className="font-bold mt-2 block">우리은행 1002-559-366067 (예금주: 오리에)</span>
-                        </p>
+
+                    {/* 계좌번호 안내 (예약금 대기 or 예약 대기) */}
+                    {(order.status === 'payment_pending' || order.status === 'pending') && (
+                        <div className="mt-4 text-sm text-orie-text/80">
+                            <p className="mb-2">아래 계좌로 입금해주시면 예약이 확정됩니다.</p>
+                            <div className="bg-white/50 p-3 rounded inline-block">
+                                <p className="font-bold text-orie-text">국민은행 123-456-7890 (예금주: 오리에)</p>
+                                <p className="text-xs text-orie-text/60 mt-1">* 입금자명이 주문자명과 일치해야 합니다.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 잔금 결제 버튼 */}
+                    {order.status === 'production_completed' && (
+                        <div className="mt-6">
+                            <p className="text-sm text-blue-800 mb-3">제작이 완료되었습니다. 잔금을 결제해주세요.</p>
+                            <Link
+                                href={`/payment/${order.id}`}
+                                className="inline-block px-6 py-3 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors rounded-sm"
+                            >
+                                잔금 결제하기
+                            </Link>
+                        </div>
                     )}
                 </div>
 

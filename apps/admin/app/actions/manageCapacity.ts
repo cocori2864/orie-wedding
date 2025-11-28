@@ -37,8 +37,13 @@ export async function getMonthlyCapacity(year: number, month: number) {
     const supabase = createAdminClient();
 
     // Calculate start and end dates of the month
-    const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+    // Calculate start and end dates of the month
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+
+    const offset = start.getTimezoneOffset() * 60000;
+    const startDate = new Date(start.getTime() - offset).toISOString().split('T')[0];
+    const endDate = new Date(end.getTime() - offset).toISOString().split('T')[0];
 
     try {
         const { data, error } = await supabase
@@ -59,8 +64,13 @@ export async function getMonthlyOrders(year: number, month: number) {
     const supabase = createAdminClient();
 
     // Calculate start and end dates of the month
-    const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+    // Calculate start and end dates of the month
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+
+    const offset = start.getTimezoneOffset() * 60000;
+    const startDate = new Date(start.getTime() - offset).toISOString().split('T')[0];
+    const endDate = new Date(end.getTime() - offset).toISOString().split('T')[0];
 
     try {
         const { data, error } = await supabase

@@ -1,21 +1,19 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
-import Script from 'next/script';
+import { useEffect, useState, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { loadTossPayments } from '@tosspayments/payment-sdk';
 import { createClient } from '../../../lib/supabase/client';
-import { processPayment } from '../../actions/processPayment';
 
-declare global {
-    interface Window {
-        IMP: any;
-    }
-}
+// 토스페이먼츠 테스트 클라이언트 키
+const TOSS_CLIENT_KEY = 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq';
 
 export default function PaymentPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [paymentReady, setPaymentReady] = useState(false);
+    const tossPaymentsRef = useRef<any>(null);
     const router = useRouter();
     const supabase = createClient();
 
@@ -38,10 +36,24 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         fetchOrder();
     }, [id, router, supabase]);
 
-    const handleCardPayment = () => {
-        if (!window.IMP) return;
-        const { IMP } = window;
-        IMP.init('imp00000000'); // 테스트용 가맹점 식별코드
+    useEffect(() => {
+        const initTossPayments = async () => {
+            try {
+                const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY);
+                tossPaymentsRef.current = tossPayments;
+                setPaymentReady(true);
+            } catch (error) {
+                console.error('토스페이먼츠 로드 실패:', error);
+            }
+        };
+        initTossPayments();
+    }, []);
+
+    const handleCardPayment = async () => {
+        if (!tossPaymentsRef.current || !paymentReady) {
+            alert('결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
 
         const finalAmount = order.final_payment_request_amount ?? Math.max(0, order.total_amount - 50000);
 
@@ -50,30 +62,24 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             return;
         }
 
-        const data = {
-            pg: 'html5_inicis',
-            pay_method: 'card',
-            merchant_uid: `mid_${new Date().getTime()}`,
-            name: `[잔금] ${order.items[0].name}`,
-            amount: finalAmount,
-            buyer_email: order.user_email || 'test@test.com',
-            buyer_name: order.customer_name,
-            buyer_tel: order.customer_phone,
-        };
+        const tossOrderId = `ORDER_${order.id.slice(0, 8)}_${Date.now()}`;
 
-        IMP.request_pay(data, async (rsp: any) => {
-            if (rsp.success) {
-                const result = await processPayment(order.id, rsp.imp_uid, finalAmount, 'card');
-                if (result.success) {
-                    alert('결제가 완료되었습니다.');
-                    router.push('/mypage');
-                } else {
-                    alert('결제 처리에 실패했습니다.');
-                }
-            } else {
-                alert(`결제에 실패하였습니다. 에러내용: ${rsp.error_msg}`);
+        try {
+            await tossPaymentsRef.current.requestPayment('카드', {
+                amount: finalAmount,
+                orderId: tossOrderId,
+                orderName: `[잔금] ${order.items?.[0]?.name || '주문 상품'}`,
+                customerName: order.guest_info?.name || order.customer_name || '고객',
+                successUrl: `${window.location.origin}/payment/success?orderId=${order.id}`,
+                failUrl: `${window.location.origin}/payment/fail?orderId=${order.id}`,
+            });
+        } catch (error: any) {
+            if (error.code === 'USER_CANCEL') {
+                // 사용자가 취소한 경우
+                return;
             }
-        });
+            alert(`결제에 실패하였습니다: ${error.message}`);
+        }
     };
 
     if (loading) return <div className="p-10 text-center">Loading...</div>;
@@ -83,7 +89,6 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
     return (
         <div className="max-w-2xl mx-auto p-6 pt-20">
-            <Script src="https://cdn.iamport.kr/v1/iamport.js" />
             <h1 className="text-2xl font-serif font-bold mb-8 text-orie-text">잔금 결제</h1>
 
             <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm mb-8">
@@ -94,7 +99,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
                     </div>
                     <div className="flex justify-between border-b pb-4">
                         <span className="text-gray-600">상품명</span>
-                        <span>{order.items[0].name}</span>
+                        <span>{order.items?.[0]?.name || '주문 상품'}</span>
                     </div>
                     <div className="flex justify-between border-b pb-4">
                         <span className="text-gray-600">총 금액</span>
@@ -116,12 +121,16 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             <div>
                 <button
                     onClick={handleCardPayment}
-                    className="w-full bg-orie-text text-white py-4 text-lg font-semibold hover:opacity-90 transition-opacity"
+                    disabled={!paymentReady}
+                    className="w-full bg-orie-text text-white py-4 text-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {finalAmount.toLocaleString()}원 결제하기 (카드/간편결제)
+                    {paymentReady
+                        ? `${finalAmount.toLocaleString()}원 결제하기 (카드/간편결제)`
+                        : '결제 모듈 로딩중...'
+                    }
                 </button>
                 <p className="text-center text-sm text-gray-500 mt-4">
-                    KG이니시스를 통해 안전하게 결제됩니다.
+                    토스페이먼츠를 통해 안전하게 결제됩니다.
                 </p>
                 <div className="mt-6 p-4 bg-gray-50 rounded text-sm text-gray-600 text-center">
                     <p>무통장 입금을 원하시는 경우, 알림톡으로 안내된 계좌로 입금해주시면 됩니다.</p>
